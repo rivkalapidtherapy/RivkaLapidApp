@@ -3,15 +3,10 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Drop existing tables (in correct order to respect foreign keys)
-DROP TABLE IF EXISTS appointments;
-DROP TABLE IF EXISTS services;
-DROP TABLE IF EXISTS gallery;
-DROP TABLE IF EXISTS working_hours;
-DROP TABLE IF EXISTS message_templates;
+-- Create tables safely (only if they don't exist) to preserve existing data
 
 -- 1. Services Table
-CREATE TABLE services (
+CREATE TABLE IF NOT EXISTS services (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   type TEXT NOT NULL,
   duration TEXT NOT NULL,
@@ -21,8 +16,17 @@ CREATE TABLE services (
   image_url TEXT
 );
 
+-- Ensure image_url column exists if the table was created previously without it
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name='services' AND column_name='image_url') THEN
+        ALTER TABLE services ADD COLUMN image_url TEXT;
+    END IF;
+END $$;
+
 -- 2. Appointments Table
-CREATE TABLE appointments (
+CREATE TABLE IF NOT EXISTS appointments (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   service_id UUID REFERENCES services(id) ON DELETE CASCADE,
   client_name TEXT NOT NULL,
@@ -36,7 +40,7 @@ CREATE TABLE appointments (
 );
 
 -- 3. Gallery Table
-CREATE TABLE gallery (
+CREATE TABLE IF NOT EXISTS gallery (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   url TEXT NOT NULL,
   title TEXT NOT NULL,
@@ -44,13 +48,13 @@ CREATE TABLE gallery (
 );
 
 -- 4. Working Hours Table
-CREATE TABLE working_hours (
+CREATE TABLE IF NOT EXISTS working_hours (
   day_of_week INTEGER PRIMARY KEY,
   hours JSONB NOT NULL
 );
 
 -- 5. Message Templates Table
-CREATE TABLE message_templates (
+CREATE TABLE IF NOT EXISTS message_templates (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL
 );
@@ -107,6 +111,12 @@ VALUES ('gallery', 'gallery', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- 2. Set up Security Policies for the 'gallery' bucket
+-- Drop existing policies first to make this script safely re-runnable
+DROP POLICY IF EXISTS "Public Read Access" ON storage.objects;
+DROP POLICY IF EXISTS "Public Upload Access" ON storage.objects;
+DROP POLICY IF EXISTS "Public Update Access" ON storage.objects;
+DROP POLICY IF EXISTS "Public Delete Access" ON storage.objects;
+
 -- Allow public read access to all images
 CREATE POLICY "Public Read Access"
 ON storage.objects FOR SELECT
