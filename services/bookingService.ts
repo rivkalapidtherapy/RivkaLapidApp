@@ -240,15 +240,20 @@ export const getAdminServices = async (): Promise<Service[]> => {
   if (supabase && !servicesLoaded) {
     const { data, error } = await supabase.from('services').select('*');
     if (!error && data && data.length > 0) {
-      dynamicServices = data.map(s => ({
-        id: s.id,
-        type: s.type as ServiceType,
-        duration: parseInt(s.duration) || 60,
-        price: s.price,
-        description: s.description,
-        isActive: true,
-        category: s.category
-      }));
+      dynamicServices = data.map(s => {
+        // Find matching initial service to retain the image URL since it's not in the DB yet
+        const matchingInitial = INITIAL_SERVICES.find(is => is.type === s.type);
+        return {
+          id: s.id,
+          type: s.type as ServiceType,
+          duration: parseInt(s.duration) || 60,
+          price: s.price,
+          description: s.description,
+          isActive: true,
+          category: s.category,
+          imageUrl: matchingInitial?.imageUrl
+        };
+      });
       servicesLoaded = true;
     } else if (!error && data && data.length === 0) {
       // If DB is empty, seed it with initial services

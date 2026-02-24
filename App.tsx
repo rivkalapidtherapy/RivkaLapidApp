@@ -260,7 +260,19 @@ const App: React.FC = () => {
           </div>
         );
       case 'booking':
-        return <BookingFlow initialServiceId={selectedServiceId} onComplete={handleBookingComplete} onCancel={() => { setView('home'); setSelectedServiceId(null); }} />;
+        return (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="pt-28 md:pt-32"
+          >
+            <BookingFlow
+              initialServiceId={selectedServiceId}
+              onComplete={handleBookingComplete}
+              onCancel={() => { setView('home'); setSelectedServiceId(null); }}
+            />
+          </motion.div>
+        );
       case 'admin':
         if (!isAdminAuthenticated) {
           return (
@@ -274,15 +286,14 @@ const App: React.FC = () => {
                   value={adminPassword}
                   onChange={(e) => setAdminPassword(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && adminPassword === "1234") {
+                    if (e.key === 'Enter' && adminPassword === "1989") {
                       setIsAdminAuthenticated(true);
                     }
                   }}
                 />
-                <p className="text-[10px] text-stone-400 uppercase tracking-widest">סיסמת ברירת מחדל: 1234</p>
                 <Button
                   onClick={() => {
-                    if (adminPassword === "1234") { // Simple password for demo
+                    if (adminPassword === "1989") {
                       setIsAdminAuthenticated(true);
                     } else {
                       alert("סיסמה שגויה");
