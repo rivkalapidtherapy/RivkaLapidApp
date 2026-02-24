@@ -337,9 +337,9 @@ const App: React.FC = () => {
               </svg>
             </div>
             <div className="space-y-4">
-              <h2 className="text-4xl md:text-5xl text-stone-800 font-light">המפגש נקבע באהבה</h2>
+              <h2 className="text-4xl md:text-5xl text-stone-800 font-light">בקשת הטיפול התקבלה</h2>
               <p className="text-stone-500 text-lg md:text-xl font-light leading-relaxed max-w-md mx-auto">
-                תודה {lastAppointment?.clientName}, המפגש שלך ב-{lastAppointment?.date} בשעה {lastAppointment?.time} אושר ומחכה לנו ביומן.
+                תודה {lastAppointment?.clientName}, הבקשה למפגש שלך ב-{lastAppointment?.date} בשעה {lastAppointment?.time} נשמרה במערכת וממתינה לאישור סופי של רבקה.
               </p>
             </div>
             {lastAppointment?.spiritualInsight && (
@@ -354,11 +354,11 @@ const App: React.FC = () => {
                 if (lastAppointment) {
                   const service = services.find(s => s.id === lastAppointment.serviceId);
                   const cleanPhone = "0547394577"; // מספר הקליניקה המעודכן
-                  const message = `שלום רבקה, קבעתי מפגש ל${service?.type} ב-${lastAppointment.date} בשעה ${lastAppointment.time}. נתראה!`;
+                  const message = `שלום רבקה! קבעתי במערכת בקשה למפגש ל${service?.type} ב-${lastAppointment.date} בשעה ${lastAppointment.time}. אשמח לאישור סופי עבור התור! ✨`;
                   window.open(`https://wa.me/972${cleanPhone.substring(1)}?text=${encodeURIComponent(message)}`, '_blank');
                 }
               }} className="min-w-[220px] bg-green-600 hover:bg-green-700 border-none">
-                שלחי לי אישור בוואטסאפ
+                שליחת הודעת וואטסאפ לאישור התור
               </Button>
               <Button variant="outline" onClick={() => setView('home')} className="min-w-[220px]">חזרה לראשי</Button>
             </div>
