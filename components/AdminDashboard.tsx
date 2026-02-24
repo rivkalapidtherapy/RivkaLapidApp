@@ -7,8 +7,10 @@ import {
   getAppointments, cancelAppointment, deleteAppointment, getClinicStats, getAdminServices,
   updateService, updateAppointment, getDailyWorkingHours, updateDailyWorkingHours,
   getGallery, addGalleryItem, deleteGalleryItem, sendWhatsAppMessage, getConfirmationMessage, getCancellationMessage,
-  addService, deleteService, confirmAppointment, getMessageTemplates, updateMessageTemplates, getReminderMessage, getPendingMessage
+  addService, deleteService, confirmAppointment, getMessageTemplates, updateMessageTemplates, getReminderMessage, getPendingMessage,
+  uploadImage
 } from '../services/bookingService';
+import { getWeeklyJournal } from '../services/geminiService';
 import { Card, Button, Input } from './UI';
 
 const DAYS_HEBREW = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
@@ -23,6 +25,7 @@ const AdminDashboard: React.FC = () => {
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [journal, setJournal] = useState<string>('');
 
   const [editingApp, setEditingApp] = useState<Appointment | null>(null);
   const [selectedDay, setSelectedDay] = useState<number>(0);
@@ -60,6 +63,12 @@ const AdminDashboard: React.FC = () => {
     setDailyHours(hours);
     setGallery(gal);
     setTemplates(tmpls);
+
+    if (activeTab === 'journal') {
+      const summary = await getWeeklyJournal(apps, svcs);
+      setJournal(summary);
+    }
+
     setLoading(false);
   };
 
@@ -139,6 +148,22 @@ const AdminDashboard: React.FC = () => {
     if (confirm("האם למחוק את השירות?")) {
       await deleteService(id);
       fetchData();
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, service: Service) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+
+    setLoading(true);
+    const file = e.target.files[0];
+    const publicUrl = await uploadImage(file);
+
+    if (publicUrl) {
+      await updateService({ ...service, imageUrl: publicUrl });
+      fetchData();
+    } else {
+      alert("שגיאה בהעלאת התמונה");
+      setLoading(false);
     }
   };
 
@@ -360,10 +385,21 @@ const AdminDashboard: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-end gap-4 mt-2">
                       <div className="flex-1">
-                        <label className="block text-[10px] text-stone-400 font-bold mb-1 uppercase tracking-widest text-right">כתובת תמונת רקע (URL)</label>
-                        <input type="text" defaultValue={service.imageUrl || ''} onBlur={(e) => updateService({ ...service, imageUrl: e.target.value })} className="w-full bg-stone-50 border-b border-stone-200 py-1 outline-none focus:border-[#7d7463] text-left text-xs" dir="ltr" placeholder="https://..." />
+                        <label className="block text-[10px] text-stone-400 font-bold mb-1 uppercase tracking-widest text-right">העלאת תמונת רקע חדשה</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, service)}
+                          className="w-full bg-stone-50 border-b border-stone-200 py-1 outline-none text-left text-xs"
+                        />
                       </div>
                     </div>
+                    {service.imageUrl && (
+                      <div className="mt-2 h-20 w-full rounded-md overflow-hidden bg-stone-100 flex items-center justify-center relative">
+                        <img src={service.imageUrl} alt="תמונה נוכחית" className="object-cover w-full h-full opacity-50" />
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white uppercase drop-shadow-md">מונה נוכחית</span>
+                      </div>
+                    )}
                   </Card>
                 ))}
               </div>
@@ -409,8 +445,8 @@ const AdminDashboard: React.FC = () => {
                     <h2 className="text-2xl font-light tracking-wide">סיכום אנרגטי שבועי</h2>
                   </div>
                   <div className="h-[1px] w-full bg-white/10"></div>
-                  <p className="text-xl text-stone-300 font-light leading-relaxed italic">
-                    "השבוע האחרון התאפיין בחיפוש משמעותי אחר 'קרקוע'. המטופלות העלו נושאים הקשורים בביטחון עצמי ובאיזון בית-עבודה. מבחינה נומרולוגית, אנחנו נכנסים לחודש של '5' - תנועה ושינוי."
+                  <p className="text-xl text-stone-300 font-light leading-relaxed italic whitespace-pre-wrap">
+                    {journal || "טוען סיכום..."}
                   </p>
                 </div>
               </Card>

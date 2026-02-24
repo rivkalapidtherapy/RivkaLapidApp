@@ -299,6 +299,29 @@ export const addService = async (service: Omit<Service, 'id'>): Promise<void> =>
   }
 };
 
+export const uploadImage = async (file: File): Promise<string | null> => {
+  if (!supabase) return null;
+
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${Math.random()}.${fileExt}`;
+  const filePath = `images/${fileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('gallery')
+    .upload(filePath, file);
+
+  if (uploadError) {
+    console.error('Error uploading image:', uploadError);
+    return null;
+  }
+
+  const { data } = supabase.storage
+    .from('gallery')
+    .getPublicUrl(filePath);
+
+  return data.publicUrl;
+};
+
 export const deleteService = async (id: string): Promise<void> => {
   dynamicServices = dynamicServices.filter(s => s.id !== id);
   if (supabase) {

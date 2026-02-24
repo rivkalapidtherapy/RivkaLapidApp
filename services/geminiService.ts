@@ -1,6 +1,6 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { ServiceType } from "../types";
+import { ServiceType, Appointment, Service } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
@@ -40,5 +40,49 @@ export const getDailyGreeting = async (): Promise<string> => {
     return lines[0] || text;
   } catch (error) {
     return "מחברים בין הנשמה לייעוד.";
+  }
+};
+
+export const getWeeklyJournal = async (appointments: Appointment[], services: Service[]): Promise<string> => {
+  const fallbackJournal = "השבוע האחרון התאפיין בחיפוש משמעותי אחר 'קרקוע'. המטופלות העלו נושאים הקשורים בביטחון עצמי ובאיזון בית-עבודה. מבחינה נומרולוגית, אנחנו נכנסים לחודש של '5' - תנועה ושינוי.";
+
+  try {
+    // Filter appointments from the last 7 days
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const recentAppointments = appointments.filter(app => {
+      const appDate = new Date(app.date);
+      return appDate >= oneWeekAgo && appDate <= new Date() && app.status === 'confirmed';
+    });
+
+    if (recentAppointments.length === 0) {
+      return "שבוע של שקט והתבוננות פנימית. זמן מצוין להיערכות אנרגטית לקראת התקופה הקרובה.";
+    }
+
+    const appDetails = recentAppointments.map(app => {
+      const service = services.find(s => s.id === app.serviceId);
+      return `- מטופלת: ${app.clientName}, סוג טיפול: ${service?.type || 'כללי'}`;
+    }).join('\n');
+
+    const prompt = `אתה עוזר וירטואלי של מטפלת רגשית ונומרולוגית בשם רבקה לפיד. 
+כתוב סיכום "יומן קליניקה" (עד 3-4 משפטים בעברית) המנתח את האנרגיה והדינמיקה הכללית של הקליניקה בשבוע החולף על סמך התורים שהיו.
+שלב נימה רוחנית/רגשית עדינה. השתמש בנתונים הבאים כהשראה:
+${appDetails}
+
+החזר רק את התוכן של הסיכום בצורה של פסקה קצרה שרבקה יכולה להסתכל עליה כדי לקבל תובנות על "המאפיין של השבוע". ללא כותרות וללא תווים מיותרים.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+      config: {
+        temperature: 0.6,
+      }
+    });
+
+    return response.text?.trim() || fallbackJournal;
+  } catch (error) {
+    console.error("Gemini Journal Error:", error);
+    return fallbackJournal;
   }
 };

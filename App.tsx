@@ -59,6 +59,16 @@ const App: React.FC = () => {
                 transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                 className="flex-1 flex flex-col justify-center px-8 md:px-20 py-32 relative z-10"
               >
+                {/* Mobile background image */}
+                <div className="md:hidden absolute inset-0 z-[-1] overflow-hidden">
+                  <img
+                    src="/rivka.png"
+                    alt=""
+                    className="w-[120%] h-auto object-cover opacity-10 absolute -right-10 top-10"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#f5f2ed]"></div>
+                </div>
+
                 <div className="max-w-xl space-y-12">
                   <div className="space-y-6">
                     <motion.span
