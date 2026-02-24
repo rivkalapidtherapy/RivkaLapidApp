@@ -3,6 +3,13 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Drop existing tables (in correct order to respect foreign keys)
+DROP TABLE IF EXISTS appointments;
+DROP TABLE IF EXISTS services;
+DROP TABLE IF EXISTS gallery;
+DROP TABLE IF EXISTS working_hours;
+DROP TABLE IF EXISTS message_templates;
+
 -- 1. Services Table
 CREATE TABLE services (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -16,9 +23,9 @@ CREATE TABLE services (
 -- 2. Appointments Table
 CREATE TABLE appointments (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  service_id UUID REFERENCES services(id),
+  service_id UUID REFERENCES services(id) ON DELETE CASCADE,
   client_name TEXT NOT NULL,
-  client_email TEXT NOT NULL,
+  client_email TEXT,
   client_phone TEXT NOT NULL,
   date TEXT NOT NULL,
   time TEXT NOT NULL,
@@ -55,11 +62,13 @@ INSERT INTO working_hours (day_of_week, hours) VALUES
 (3, '["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]'),
 (4, '["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]'),
 (5, '[]'),
-(6, '[]');
+(6, '[]')
+ON CONFLICT (day_of_week) DO NOTHING;
 
 -- Insert default message templates
 INSERT INTO message_templates (key, value) VALUES
 ('confirmation', 'שלום {clientName}, איזה כיף! 🌿 נקבע לנו מפגש של {serviceName} בקליניקה של רבקה לפיד. תאריך: {date} שעה: {time}. כוונה רוחנית עבורך: "{spiritualInsight}". מחכה לראותך! ✨'),
 ('cancellation', 'שלום {clientName}, המפגש שלנו ל-{serviceName} בתאריך {date} בשעה {time} בוטל. ניתן ליצור קשר לתיאום מועד חדש. יום שקט, רבקה.'),
 ('reminder', 'היי {clientName}, מזכירה לך באהבה על המפגש שלנו מחר ({date}) בשעה {time}. מחכה לראות אותך! 🌿'),
-('pending', 'שלום {clientName}, קיבלתי את בקשתך למפגש {serviceName} בתאריך {date} בשעה {time}. התור ממתין לאישור סופי שלי, אעדכן אותך בהקדם! ✨');
+('pending', 'שלום {clientName}, קיבלתי את בקשתך למפגש {serviceName} בתאריך {date} בשעה {time}. התור ממתין לאישור סופי שלי, אעדכן אותך בהקדם! ✨')
+ON CONFLICT (key) DO NOTHING;
