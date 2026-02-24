@@ -73,3 +73,37 @@ INSERT INTO message_templates (key, value) VALUES
 ('reminder', 'היי {clientName}, מזכירה לך באהבה על המפגש שלנו מחר ({date}) בשעה {time}. מחכה לראות אותך! 🌿'),
 ('pending', 'שלום {clientName}, קיבלתי את בקשתך למפגש {serviceName} בתאריך {date} בשעה {time}. התור ממתין לאישור סופי שלי, אעדכן אותך בהקדם! ✨')
 ON CONFLICT (key) DO NOTHING;
+
+-- ==========================================
+-- STORAGE SETUP (For Images)
+-- ==========================================
+
+-- 1. Create the bucket if it doesn't exist
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('gallery', 'gallery', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- 2. Set up Security Policies for the 'gallery' bucket
+-- Allow public read access to all images
+CREATE POLICY "Public Read Access"
+ON storage.objects FOR SELECT
+TO public
+USING (bucket_id = 'gallery');
+
+-- Allow anyone to upload images (since we don't have auth yet, this is open for now)
+CREATE POLICY "Public Upload Access"
+ON storage.objects FOR INSERT
+TO public
+WITH CHECK (bucket_id = 'gallery');
+
+-- Allow anyone to update their images
+CREATE POLICY "Public Update Access"
+ON storage.objects FOR UPDATE
+TO public
+USING (bucket_id = 'gallery');
+
+-- Allow anyone to delete their images
+CREATE POLICY "Public Delete Access"
+ON storage.objects FOR DELETE
+TO public
+USING (bucket_id = 'gallery');
