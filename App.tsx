@@ -64,7 +64,7 @@ const App: React.FC = () => {
                   <img
                     src="/rivka.png"
                     alt=""
-                    className="w-[120%] h-auto object-cover opacity-10 absolute -right-10 top-10"
+                    className="w-[120%] h-auto object-cover opacity-25 absolute -right-10 top-10"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#f5f2ed]"></div>
                 </div>
