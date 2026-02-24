@@ -251,7 +251,7 @@ export const getAdminServices = async (): Promise<Service[]> => {
           description: s.description,
           isActive: true,
           category: s.category,
-          imageUrl: matchingInitial?.imageUrl
+          imageUrl: s.image_url || matchingInitial?.imageUrl
         };
       });
       servicesLoaded = true;
@@ -272,6 +272,15 @@ export const getAdminServices = async (): Promise<Service[]> => {
 
 export const updateService = async (updated: Service): Promise<void> => {
   dynamicServices = dynamicServices.map(s => s.id === updated.id ? updated : s);
+  if (supabase) {
+    await supabase.from('services').update({
+      type: updated.type,
+      duration: updated.duration.toString(),
+      price: updated.price,
+      description: updated.description,
+      image_url: updated.imageUrl
+    }).eq('id', updated.id);
+  }
 };
 
 export const addService = async (service: Omit<Service, 'id'>): Promise<void> => {
@@ -281,7 +290,8 @@ export const addService = async (service: Omit<Service, 'id'>): Promise<void> =>
       duration: service.duration.toString(),
       price: service.price,
       description: service.description,
-      category: (service as any).category || 'general'
+      category: (service as any).category || 'general',
+      image_url: service.imageUrl
     }]);
     servicesLoaded = false; // Refresh on next fetch
   } else {
@@ -291,6 +301,9 @@ export const addService = async (service: Omit<Service, 'id'>): Promise<void> =>
 
 export const deleteService = async (id: string): Promise<void> => {
   dynamicServices = dynamicServices.filter(s => s.id !== id);
+  if (supabase) {
+    await supabase.from('services').delete().eq('id', id);
+  }
 };
 
 export const getGallery = async (): Promise<GalleryItem[]> => {

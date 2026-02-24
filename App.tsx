@@ -113,12 +113,12 @@ const App: React.FC = () => {
                 transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
                 className="hidden md:flex flex-1 relative items-center justify-center bg-[#f5f2ed]"
               >
-                <div className="relative w-[80%] max-w-lg aspect-square">
-                  <div className="absolute inset-0 bg-[#7d7463]/10 rounded-full blur-3xl animate-pulse"></div>
+                <div className="relative w-[80%] max-w-lg">
+                  <div className="absolute inset-0 bg-[#7d7463]/10 rounded-[50%_/_40%] blur-3xl animate-pulse"></div>
                   <img
                     src="/rivka.png"
                     alt="רבקה לפיד"
-                    className="relative z-10 w-full h-full object-cover rounded-full shadow-2xl border-4 border-white/50"
+                    className="relative z-10 w-full h-auto object-contain drop-shadow-2xl"
                   />
                 </div>
               </motion.div>
@@ -281,6 +281,7 @@ const App: React.FC = () => {
               <div className="space-y-4">
                 <input
                   type="password"
+                  autoFocus
                   placeholder="סיסמה..."
                   className="w-full border-b border-[#2d2a26]/10 py-3 focus:border-[#7d7463] outline-none transition-all duration-500 bg-transparent text-center"
                   value={adminPassword}

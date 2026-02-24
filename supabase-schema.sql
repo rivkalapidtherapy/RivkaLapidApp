@@ -17,7 +17,8 @@ CREATE TABLE services (
   duration TEXT NOT NULL,
   price INTEGER NOT NULL,
   description TEXT NOT NULL,
-  category TEXT NOT NULL
+  category TEXT NOT NULL,
+  image_url TEXT
 );
 
 -- 2. Appointments Table

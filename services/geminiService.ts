@@ -8,8 +8,7 @@ export const getSpiritualInsight = async (serviceType: ServiceType, clientName: 
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `צור "כוונה רוחנית" אחת, קצרה מאוד, מרגיעה ומקרקעת עבור ${clientName} שקבעה כרגע מפגש מסוג ${serviceType} אצל רבקה לפיד. 
-      החזר אך ורק משפט אחד או שניים בעברית. ללא הקדמות, ללא מרכאות וללא מספרים.`,
+      contents: `צור אישור תור קצר ולעניין עבור ${clientName} לשירות ${serviceType}. משפט אחד בעברית שמשדר מקצועיות נעימה עם נגיעה קלה של משמעות ויחס אישי (למשל: נרשם בהצלחה, מתרגשת לפגוש אותך וכו'). עד 10 מילים.`,
       config: {
         temperature: 0.7,
         topP: 0.9,
@@ -32,10 +31,10 @@ export const getDailyGreeting = async (): Promise<string> => {
         temperature: 0.5,
       }
     });
-    
+
     // Clean up the response to ensure we only get a clean string
     let text = response.text?.trim() || "ברוכה הבאה למרחב של בהירות וצמיחה רגשית.";
-    
+
     // In case the AI still provides options despite instructions, take the first line that doesn't look like a header
     const lines = text.split('\n').filter(l => l.trim().length > 0 && !l.includes(':'));
     return lines[0] || text;

@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SERVICES as INITIAL_SERVICES } from '../constants';
 import { Service, Appointment } from '../types';
 import { Button, Card, Input } from './UI';
@@ -120,10 +121,25 @@ const BookingFlow: React.FC<BookingFlowProps> = ({ onComplete, onCancel, initial
                 </div>
               </div>
             ))}
-            <div className="pt-8 flex justify-between flex-row-reverse">
+            <div className="pt-8 flex justify-between flex-row-reverse relative z-40 bg-white">
               <Button onClick={handleNext} disabled={!selectedService} className="w-32 rounded-xl">המשך</Button>
               <Button variant="outline" onClick={onCancel} className="w-32 rounded-xl">ביטול</Button>
             </div>
+
+            <AnimatePresence>
+              {selectedService && (
+                <motion.div
+                  initial={{ opacity: 0, y: 50, x: '-50%' }}
+                  animate={{ opacity: 1, y: 0, x: '-50%' }}
+                  exit={{ opacity: 0, y: 50, x: '-50%' }}
+                  className="fixed bottom-6 left-1/2 z-50 w-full max-w-[90%] md:hidden"
+                >
+                  <Button onClick={handleNext} className="w-full rounded-2xl shadow-2xl shadow-[#7d7463]/40 py-4 text-lg bg-[#7d7463] hover:bg-[#635a4a] text-white">
+                    לשלב הבא
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
