@@ -65,7 +65,8 @@ let appointments: Appointment[] = [
   }
 ];
 
-let dynamicServices: Service[] = [...INITIAL_SERVICES];
+let dynamicServices: Service[] = [];
+let servicesLoaded = false;
 let dailyWorkingHours: DailyHours = { ...DEFAULT_DAILY_HOURS };
 let galleryItems: GalleryItem[] = [
   { id: '1', url: 'https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d', title: 'נרות זן', category: 'אווירה' },
@@ -127,7 +128,7 @@ export const addAppointment = async (app: Omit<Appointment, 'id' | 'createdAt' |
       status: 'pending',
       spiritual_insight: app.spiritualInsight
     }]).select().single();
-    
+
     if (!error && data) {
       return {
         id: data.id,
@@ -144,8 +145,8 @@ export const addAppointment = async (app: Omit<Appointment, 'id' | 'createdAt' |
     }
   }
 
-  const newApp = { 
-    ...app, 
+  const newApp = {
+    ...app,
     id: Math.random().toString(36).substr(2, 9),
     status: 'pending' as const,
     createdAt: new Date().toISOString()
@@ -172,7 +173,7 @@ export const updateAppointment = async (id: string, data: Partial<Appointment>):
     if (data.time) updateData.time = data.time;
     if (data.status) updateData.status = data.status;
     if (data.spiritualInsight) updateData.spiritual_insight = data.spiritualInsight;
-    
+
     await supabase.from('appointments').update(updateData).eq('id', id);
   }
   appointments = appointments.map(a => a.id === id ? { ...a, ...data } : a);
@@ -196,10 +197,10 @@ export const getAvailabilityForDate = async (dateStr: string): Promise<string[]>
   const date = new Date(dateStr);
   const dayOfWeek = date.getDay();
   const baseHours = dailyWorkingHours[dayOfWeek] || [];
-  
+
   const dayBookings = appointments.filter(a => a.date === dateStr && a.status !== 'cancelled');
   const bookedTimes = dayBookings.map(a => a.time);
-  
+
   return baseHours.filter(time => !bookedTimes.includes(time));
 };
 
@@ -231,11 +232,36 @@ export const getClinicStats = async (): Promise<ClinicStats> => {
     upcomingAppointments: active.filter(a => new Date(a.date) >= new Date()).length,
     activeClients: new Set(active.map(a => a.clientEmail)).size,
     topService: topService,
-    monthlyGrowth: 12.5 
+    monthlyGrowth: 12.5
   };
 };
 
 export const getAdminServices = async (): Promise<Service[]> => {
+  if (supabase && !servicesLoaded) {
+    const { data, error } = await supabase.from('services').select('*');
+    if (!error && data && data.length > 0) {
+      dynamicServices = data.map(s => ({
+        id: s.id,
+        type: s.type as ServiceType,
+        duration: parseInt(s.duration) || 60,
+        price: s.price,
+        description: s.description,
+        isActive: true,
+        category: s.category
+      }));
+      servicesLoaded = true;
+    } else if (!error && data && data.length === 0) {
+      // If DB is empty, seed it with initial services
+      for (const s of INITIAL_SERVICES) {
+        await addService(s);
+      }
+      return getAdminServices(); // Recursive call to get the newly created services with real UUIDs
+    }
+  }
+
+  if (dynamicServices.length === 0) {
+    return [...INITIAL_SERVICES];
+  }
   return [...dynamicServices];
 };
 
@@ -244,7 +270,18 @@ export const updateService = async (updated: Service): Promise<void> => {
 };
 
 export const addService = async (service: Omit<Service, 'id'>): Promise<void> => {
-  dynamicServices.push({ ...service, id: Date.now().toString() });
+  if (supabase) {
+    await supabase.from('services').insert([{
+      type: service.type,
+      duration: service.duration.toString(),
+      price: service.price,
+      description: service.description,
+      category: (service as any).category || 'general'
+    }]);
+    servicesLoaded = false; // Refresh on next fetch
+  } else {
+    dynamicServices.push({ ...service, id: Date.now().toString() });
+  }
 };
 
 export const deleteService = async (id: string): Promise<void> => {
