@@ -20,9 +20,10 @@ const BookingFlow: React.FC<BookingFlowProps> = ({ onComplete, onCancel, initial
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
-  const [clientInfo, setClientInfo] = useState({ name: '', email: '', phone: '' });
+  const [clientInfo, setClientInfo] = useState({ name: '', email: '', phone: '', birthdate: '' });
   const [loading, setLoading] = useState(false);
   const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
+  const [personalYearInsight, setPersonalYearInsight] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -58,6 +59,46 @@ const BookingFlow: React.FC<BookingFlowProps> = ({ onComplete, onCancel, initial
 
   const handleNext = () => setStep(prev => prev + 1);
   const handleBack = () => setStep(prev => prev - 1);
+
+  const calculatePersonalYear = (birthdate: string) => {
+    if (!birthdate) return null;
+    const parts = birthdate.split('-');
+    if (parts.length !== 3) return null;
+
+    // Personal Year = Birth Day + Birth Month + Current Year
+    const day = parseInt(parts[2]);
+    const month = parseInt(parts[1]);
+    const currentYear = new Date().getFullYear();
+
+    let sum = day + month + currentYear;
+
+    // Reduce to single digit (1-9), excluding master numbers if we wanted them, but 1-9 is standard
+    while (sum > 9) {
+      sum = sum.toString().split('').reduce((a, b) => a + parseInt(b), 0);
+    }
+
+    const insights: Record<number, string> = {
+      1: "את נמצאת בשנת 1 - שנה של התחלות חדשות, יוזמה ופריצת דרך. עידן חדש נפתח עבורך. תזמון מושלם לטיפול!",
+      2: "את נמצאת בשנת 2 - שנה של חיבור, רגישות וזוגיות. זמן לעבוד על שיתופי פעולה והקשבה פנימית.",
+      3: "את נמצאת בשנת 3 - שנה של ביטוי אישי, יצירתיות ושמחה. הגעת כדי להוציא את הקול שלך החוצה.",
+      4: "את נמצאת בשנת 4 - שנה של בניה, יציבות ומיקוד. זמן להניח יסודות חזקים לעתיד שלך. טיפול יעזור למרכז אותך.",
+      5: "את נמצאת בשנת 5 - שנה של תנועה, שחרור ושינויים. הקליניקה היא מקום בטוח לעבד את כל ההתפתחויות האלה.",
+      6: "את נמצאת בשנת 6 - שנה של משפחה, הרמוניה ואהבה. זמן לטפל בבית הפנימי שלך. אני כאן בשבילך.",
+      7: "את נמצאת בשנת 7 - שנה של חקירה פנימית, התבוננות וצמיחה רוחנית. זו שנה שקוראת לטיפול ולגילוי עצמי עמוק.",
+      8: "את נמצאת בשנת 8 - שנה של עוצמה, קריירה ומימוש. זמן לקטוף פירות. נלמד איך להחזיק את הכוח הזה יחד.",
+      9: "את נמצאת בשנת 9 - שנה של סיומים, סגירת מעגלים ושחרור. הטיפול יסייע לך להרפות ממה שלא משרת אותך יותר לקראת התחלה חדשה."
+    };
+
+    return insights[sum] || null;
+  };
+
+  useEffect(() => {
+    if (clientInfo.birthdate) {
+      setPersonalYearInsight(calculatePersonalYear(clientInfo.birthdate));
+    } else {
+      setPersonalYearInsight(null);
+    }
+  }, [clientInfo.birthdate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -210,13 +251,40 @@ const BookingFlow: React.FC<BookingFlowProps> = ({ onComplete, onCancel, initial
                 onChange={e => setClientInfo(prev => ({ ...prev, phone: e.target.value }))}
               />
             </div>
-            <Input
-              label="כתובת אימייל (אופציונלי)"
-              type="email"
-              placeholder="name@example.com"
-              value={clientInfo.email}
-              onChange={e => setClientInfo(prev => ({ ...prev, email: e.target.value }))}
-            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input
+                label="כתובת אימייל (אופציונלי)"
+                type="email"
+                placeholder="name@example.com"
+                value={clientInfo.email}
+                onChange={e => setClientInfo(prev => ({ ...prev, email: e.target.value }))}
+              />
+              <Input
+                label="תאריך לידה (אופציונלי - לחוויה מותאמת אישית)"
+                type="date"
+                value={clientInfo.birthdate}
+                max={new Date().toISOString().split('T')[0]}
+                onChange={e => setClientInfo(prev => ({ ...prev, birthdate: e.target.value }))}
+              />
+            </div>
+
+            <AnimatePresence>
+              {personalYearInsight && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: 'auto' }}
+                  exit={{ opacity: 0, y: 10, height: 0 }}
+                  className="bg-[#f5f2ed] border border-[#7d7463]/20 p-6 rounded-2xl flex gap-4 items-start overflow-hidden mt-6"
+                >
+                  <div className="text-2xl mt-1">✨</div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] uppercase font-bold text-[#7d7463] tracking-widest">הצצה נומרולוגית אישית</p>
+                    <p className="text-stone-700 text-sm leading-relaxed">{personalYearInsight}</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <div className="bg-stone-50 p-8 rounded-2xl border border-stone-100 mt-8">
               <h4 className="text-[10px] uppercase tracking-[0.2em] text-stone-400 font-bold mb-4">סיכום המפגש המתוכנן</h4>
