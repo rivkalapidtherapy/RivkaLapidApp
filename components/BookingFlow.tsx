@@ -66,8 +66,6 @@ const BookingFlow: React.FC<BookingFlowProps> = ({ onComplete, onCancel, initial
 
     setLoading(true);
     try {
-      const insight = await getSpiritualInsight(selectedService.type, clientInfo.name);
-
       const newApp: Omit<Appointment, 'id' | 'createdAt' | 'status'> = {
         serviceId: selectedService.id,
         clientName: clientInfo.name,
@@ -75,10 +73,24 @@ const BookingFlow: React.FC<BookingFlowProps> = ({ onComplete, onCancel, initial
         clientPhone: clientInfo.phone,
         date: selectedDate,
         time: selectedTime,
-        spiritualInsight: insight
+        spiritualInsight: "" // Will be updated async
       };
 
       const result = await addAppointment(newApp);
+
+      // Fire and forget: generate insight and update DB without blocking the user
+      getSpiritualInsight(selectedService.type, clientInfo.name)
+        .then(async (insight) => {
+          // Wait for a second just in case DB needs time to sync, although not strictly necessary
+          // But we don't need to await here, we just call update
+          if (insight) {
+            import('../services/bookingService').then(({ updateAppointment }) => {
+              updateAppointment(result.id, { spiritualInsight: insight });
+            });
+          }
+        })
+        .catch(console.error);
+
       onComplete(result);
     } catch (err) {
       alert("ההרשמה נכשלה. אנא נסי שוב.");

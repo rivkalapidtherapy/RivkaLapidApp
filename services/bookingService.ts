@@ -2,6 +2,7 @@
 import { Appointment, ServiceType, ClinicStats, Service, GalleryItem, DailyHours, MessageTemplates } from "../types";
 import { WORK_HOURS as INITIAL_HOURS, SERVICES as INITIAL_SERVICES } from "../constants";
 import { supabase } from "../lib/supabase";
+import { adaptMessageForGender } from "./geminiService";
 
 // Default working hours: Sun-Thu 09:00-17:00
 const DEFAULT_DAILY_HOURS: DailyHours = {
@@ -375,18 +376,22 @@ const formatMessage = (template: string, app: Appointment, serviceName: string) 
     .replace(/{spiritualInsight}/g, app.spiritualInsight || '');
 };
 
-export const getConfirmationMessage = (app: Appointment, serviceName: string) => {
-  return formatMessage(messageTemplates.confirmation, app, serviceName);
+export const getConfirmationMessage = async (app: Appointment, serviceName: string) => {
+  const msg = formatMessage(messageTemplates.confirmation, app, serviceName);
+  return await adaptMessageForGender(msg, app.clientName);
 };
 
-export const getCancellationMessage = (app: Appointment, serviceName: string) => {
-  return formatMessage(messageTemplates.cancellation, app, serviceName);
+export const getCancellationMessage = async (app: Appointment, serviceName: string) => {
+  const msg = formatMessage(messageTemplates.cancellation, app, serviceName);
+  return await adaptMessageForGender(msg, app.clientName);
 };
 
-export const getReminderMessage = (app: Appointment, serviceName: string) => {
-  return formatMessage(messageTemplates.reminder, app, serviceName);
+export const getReminderMessage = async (app: Appointment, serviceName: string) => {
+  const msg = formatMessage(messageTemplates.reminder, app, serviceName);
+  return await adaptMessageForGender(msg, app.clientName);
 };
 
-export const getPendingMessage = (app: Appointment, serviceName: string) => {
-  return formatMessage(messageTemplates.pending, app, serviceName);
+export const getPendingMessage = async (app: Appointment, serviceName: string) => {
+  const msg = formatMessage(messageTemplates.pending, app, serviceName);
+  return await adaptMessageForGender(msg, app.clientName);
 };

@@ -86,3 +86,28 @@ ${appDetails}
     return fallbackJournal;
   }
 };
+
+export const adaptMessageForGender = async (message: string, clientName: string): Promise<string> => {
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `המשפט הבא הוא הודעת ווטסאפ לקביעת תור. 
+התאם תמיד את צורת הפנייה (זכר/נקבה) באופן מושלם בהתאם לשם הלקוח(ה): "${clientName}".
+אם השם הוא של גבר או זוג, הפוך את ההודעה ללשון זכר/רבים. אם של אישה (שזו רוב הקליניקה), השאר בלשון נקבה.
+אל תשנה את הצורה והתוכן של ההודעה. רק תשנה מילים ממוגדרות (כגון היקר/היקרה, מתרגשת/מתרגש, מחכה/מחכה).
+
+ההודעה:
+${message}
+
+החזר רק את ההודעה המותאמת ללא שום תוספות.`,
+      config: {
+        temperature: 0.1,
+      }
+    });
+
+    return response.text?.trim() || message;
+  } catch (error) {
+    console.error("Gemini Gender Adapt Error:", error);
+    return message;
+  }
+};
