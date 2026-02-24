@@ -116,8 +116,8 @@ const App: React.FC = () => {
                 <div className="relative w-[80%] max-w-lg aspect-square">
                   <div className="absolute inset-0 bg-[#7d7463]/10 rounded-full blur-3xl animate-pulse"></div>
                   <img
-                    src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=800"
-                    alt="רבקה לפיד אווירה"
+                    src="/rivka.png"
+                    alt="רבקה לפיד"
                     className="relative z-10 w-full h-full object-cover rounded-full shadow-2xl border-4 border-white/50"
                   />
                 </div>
