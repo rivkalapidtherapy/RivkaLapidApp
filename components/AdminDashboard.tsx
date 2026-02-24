@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MessageCircle, Edit2, XCircle, Trash2, CheckCircle2, Clock, Calendar as CalendarIcon, User, AlertTriangle, CheckCircle, ChevronLeft, ChevronRight, Check, Mail } from 'lucide-react';
+import { Search, MessageCircle, Edit2, XCircle, Trash2, CheckCircle2, Clock, Calendar as CalendarIcon, User, AlertTriangle, CheckCircle, ChevronLeft, ChevronRight, Check, Mail, RefreshCw } from 'lucide-react';
 import { Appointment, ClinicStats, Service, AdminTab, GalleryItem, DailyHours, ServiceType, MessageTemplates } from '../types';
 import {
   getAppointments, cancelAppointment, deleteAppointment, getClinicStats, getAdminServices,
@@ -632,13 +632,23 @@ const AppointmentCard: React.FC<{
               >
                 <Edit2 className="w-5 h-5" />
               </button>
-              <button
-                onClick={() => onCancel(app)}
-                title="בטל מפגש"
-                className="w-10 h-10 bg-red-50 text-red-600 rounded-full flex items-center justify-center hover:bg-red-100 transition-all duration-300 hover:scale-110"
-              >
-                <XCircle className="w-5 h-5" />
-              </button>
+              {app.status === 'cancelled' ? (
+                <button
+                  onClick={() => onConfirm(app)}
+                  title="שחזר מפגש"
+                  className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center hover:bg-blue-100 transition-all duration-300 hover:scale-110"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => onCancel(app)}
+                  title="בטל מפגש"
+                  className="w-10 h-10 bg-red-50 text-red-600 rounded-full flex items-center justify-center hover:bg-red-100 transition-all duration-300 hover:scale-110"
+                >
+                  <XCircle className="w-5 h-5" />
+                </button>
+              )}
               <button
                 onClick={() => onDelete(app.id)}
                 title="מחק לצמיתות"

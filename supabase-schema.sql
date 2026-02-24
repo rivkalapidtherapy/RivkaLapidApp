@@ -68,10 +68,33 @@ ON CONFLICT (day_of_week) DO NOTHING;
 
 -- Insert default message templates
 INSERT INTO message_templates (key, value) VALUES
-('confirmation', 'שלום {clientName}, איזה כיף! 🌿 נקבע לנו מפגש של {serviceName} בקליניקה של רבקה לפיד. תאריך: {date} שעה: {time}. כוונה רוחנית עבורך: "{spiritualInsight}". מחכה לראותך! ✨'),
-('cancellation', 'שלום {clientName}, המפגש שלנו ל-{serviceName} בתאריך {date} בשעה {time} בוטל. ניתן ליצור קשר לתיאום מועד חדש. יום שקט, רבקה.'),
-('reminder', 'היי {clientName}, מזכירה לך באהבה על המפגש שלנו מחר ({date}) בשעה {time}. מחכה לראות אותך! 🌿'),
-('pending', 'שלום {clientName}, קיבלתי את בקשתך למפגש {serviceName} בתאריך {date} בשעה {time}. התור ממתין לאישור סופי שלי, אעדכן אותך בהקדם! ✨')
+('confirmation', 'שלום {clientName} היקרה 💕
+איזה כיף! נקבע לנו מפגש של {serviceName}.
+
+🗓️ מתי? {date}
+⏰ באיזו שעה? {time}
+
+מסר קטן עבורך לקראת המפגש:
+"{spiritualInsight}"
+
+מחכה לראותך ולצאת לדרך משותפת! ✨
+רבקה לפיד.'),
+('cancellation', 'שלום {clientName},
+רציתי לעדכן שהמפגש שלנו ל-{serviceName} בתאריך {date} בשעה {time} בוטל לצערי.
+
+במידה ותרצי, ניתן ליצור קשר או לתאם מועד חדש דרך האתר.
+יום מלא באור ושקט 🌿
+רבקה.'),
+('reminder', 'היי {clientName} האהובה 🌸
+מזכירה לך באהבה שמחר ({date}) בשעה {time} אנחנו נפגשות. 
+
+מחכה לראות אותך!
+רבקה לפיד 🤍'),
+('pending', 'שלום {clientName},
+קיבלתי את בקשתך באהבה למפגש {serviceName} בתאריך {date} בשעה {time}. 
+
+התור כרגע ממתין לאישור סופי ביומן שלי, ואעדכן אותך ממש בקרוב! ✨
+רבקה.')
 ON CONFLICT (key) DO NOTHING;
 
 -- ==========================================

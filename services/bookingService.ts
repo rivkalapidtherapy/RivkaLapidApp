@@ -75,24 +75,33 @@ let galleryItems: GalleryItem[] = [
 ];
 
 let messageTemplates: MessageTemplates = {
-  confirmation: `שלום {clientName}, איזה כיף! 🌿
-נקבע לנו מפגש של {serviceName} בקליניקה של רבקה לפיד.
+  confirmation: `שלום {clientName} היקרה 💕
+איזה כיף! נקבע לנו מפגש של {serviceName}.
 
-📅 תאריך: {date}
-⏰ שעה: {time}
+🗓️ מתי? {date}
+⏰ באיזו שעה? {time}
 
-כוונה רוחנית עבורך:
+מסר קטן עבורך לקראת המפגש:
 "{spiritualInsight}"
 
-מחכה לראותך! ✨`,
+מחכה לראותך ולצאת לדרך משותפת! ✨
+רבקה לפיד.`,
   cancellation: `שלום {clientName},
-המפגש שלנו ל-{serviceName} בתאריך {date} בשעה {time} בוטל.
-ניתן ליצור קשר לתיאום מועד חדש.
-יום שקט, רבקה.`,
-  reminder: `היי {clientName}, מזכירה לך באהבה על המפגש שלנו מחר ({date}) בשעה {time}.
-מחכה לראות אותך! 🌿`,
-  pending: `שלום {clientName}, קיבלתי את בקשתך למפגש {serviceName} בתאריך {date} בשעה {time}.
-התור ממתין לאישור סופי שלי, אעדכן אותך בהקדם! ✨`
+רציתי לעדכן שהמפגש שלנו ל-{serviceName} בתאריך {date} בשעה {time} בוטל לצערי.
+
+במידה ותרצי, ניתן ליצור קשר או לתאם מועד חדש דרך האתר.
+יום מלא באור ושקט 🌿
+רבקה.`,
+  reminder: `היי {clientName} האהובה 🌸
+מזכירה לך באהבה שמחר ({date}) בשעה {time} אנחנו נפגשות. 
+
+מחכה לראות אותך!
+רבקה לפיד 🤍`,
+  pending: `שלום {clientName},
+קיבלתי את בקשתך באהבה למפגש {serviceName} בתאריך {date} בשעה {time}. 
+
+התור כרגע ממתין לאישור סופי ביומן שלי, ואעדכן אותך ממש בקרוב! ✨
+רבקה.`
 };
 
 export const getAppointments = async (): Promise<Appointment[]> => {
