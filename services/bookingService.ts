@@ -2,7 +2,6 @@
 import { Appointment, ServiceType, ClinicStats, Service, GalleryItem, DailyHours, MessageTemplates } from "../types";
 import { WORK_HOURS as INITIAL_HOURS, SERVICES as INITIAL_SERVICES } from "../constants";
 import { supabase } from "../lib/supabase";
-import { adaptMessageForGender } from "./geminiService";
 
 // Default working hours: Sun-Thu 09:00-17:00
 const DEFAULT_DAILY_HOURS: DailyHours = {
@@ -76,13 +75,13 @@ let galleryItems: GalleryItem[] = [
 ];
 
 let messageTemplates: MessageTemplates = {
-  confirmation: `שלום {clientName} היקרה 💕
+  confirmation: `שלום {clientName} היקר/ה 💕
 איזה כיף! נקבע לנו מפגש של {serviceName}.
 
 🗓️ מתי? {date}
 ⏰ באיזו שעה? {time}
 
-מסר קטן עבורך לקראת המפגש:
+מסר קטן מדויק עבורך:
 "{spiritualInsight}"
 
 מחכה לראותך ולצאת לדרך משותפת! ✨
@@ -90,18 +89,18 @@ let messageTemplates: MessageTemplates = {
   cancellation: `שלום {clientName},
 רציתי לעדכן שהמפגש שלנו ל-{serviceName} בתאריך {date} בשעה {time} בוטל לצערי.
 
-במידה ותרצי, ניתן ליצור קשר או לתאם מועד חדש דרך האתר.
+ניתן ליצור קשר או לתאם מועד חדש דרך האתר.
 יום מלא באור ושקט 🌿
 רבקה.`,
-  reminder: `היי {clientName} האהובה 🌸
-מזכירה לך באהבה שמחר ({date}) בשעה {time} אנחנו נפגשות. 
+  reminder: `היי {clientName} 🌸
+תזכורת באהבה - מחר ({date}) בשעה {time} אנחנו נפגשים. 
 
-מחכה לראות אותך!
+מחכה לראותך!
 רבקה לפיד 🤍`,
   pending: `שלום {clientName},
-קיבלתי את בקשתך באהבה למפגש {serviceName} בתאריך {date} בשעה {time}. 
+קיבלתי את הבקשה באהבה למפגש {serviceName} בתאריך {date} בשעה {time}. 
 
-התור כרגע ממתין לאישור סופי ביומן שלי, ואעדכן אותך ממש בקרוב! ✨
+התור כרגע ממתין לאישור סופי ביומן שלי, העדכון יישלח ממש בקרוב! ✨
 רבקה.`
 };
 
@@ -367,31 +366,45 @@ export const updateMessageTemplates = async (templates: MessageTemplates): Promi
   messageTemplates = { ...templates };
 };
 
+const adaptMessageLocally = (message: string, clientName: string) => {
+  // Simple heuristic for male names (this catches common male components)
+  const isMale = /^(דוד|משה|חיים|אברהם|יצחק|יעקב|יוסף|ישראל|אייל|ציון|עידן|אלעד|גלעד|רועי|איתי|יונתן|יהונתן|תומר|אורן|עמית|ניר)$/.test(clientName.split(' ')[0]);
+
+  if (isMale) {
+    return message
+      .replace(/היקרה/g, 'היקר')
+      .replace(/האהובה/g, 'האלוף')
+      .replace(/מתרגשת/g, 'מתרגש')
+      .replace(/נפגשות/g, 'נפגשים')
+      .replace(/ותרצי/g, 'ותצה')
+      .replace(/מוזמנת/g, 'מוזמן');
+  }
+  return message;
+};
+
 const formatMessage = (template: string, app: Appointment, serviceName: string) => {
-  return template
+  const baseMessage = template
     .replace(/{clientName}/g, app.clientName)
     .replace(/{date}/g, app.date)
     .replace(/{time}/g, app.time)
     .replace(/{serviceName}/g, serviceName)
     .replace(/{spiritualInsight}/g, app.spiritualInsight || '');
+
+  return adaptMessageLocally(baseMessage, app.clientName);
 };
 
-export const getConfirmationMessage = async (app: Appointment, serviceName: string) => {
-  const msg = formatMessage(messageTemplates.confirmation, app, serviceName);
-  return await adaptMessageForGender(msg, app.clientName);
+export const getConfirmationMessage = (app: Appointment, serviceName: string) => {
+  return formatMessage(messageTemplates.confirmation, app, serviceName);
 };
 
-export const getCancellationMessage = async (app: Appointment, serviceName: string) => {
-  const msg = formatMessage(messageTemplates.cancellation, app, serviceName);
-  return await adaptMessageForGender(msg, app.clientName);
+export const getCancellationMessage = (app: Appointment, serviceName: string) => {
+  return formatMessage(messageTemplates.cancellation, app, serviceName);
 };
 
-export const getReminderMessage = async (app: Appointment, serviceName: string) => {
-  const msg = formatMessage(messageTemplates.reminder, app, serviceName);
-  return await adaptMessageForGender(msg, app.clientName);
+export const getReminderMessage = (app: Appointment, serviceName: string) => {
+  return formatMessage(messageTemplates.reminder, app, serviceName);
 };
 
-export const getPendingMessage = async (app: Appointment, serviceName: string) => {
-  const msg = formatMessage(messageTemplates.pending, app, serviceName);
-  return await adaptMessageForGender(msg, app.clientName);
+export const getPendingMessage = (app: Appointment, serviceName: string) => {
+  return formatMessage(messageTemplates.pending, app, serviceName);
 };

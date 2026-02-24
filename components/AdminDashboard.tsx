@@ -75,8 +75,7 @@ const AdminDashboard: React.FC = () => {
   const handleConfirm = async (app: Appointment) => {
     await confirmAppointment(app.id);
     const service = services.find(s => s.id === app.serviceId);
-    const msg = await getConfirmationMessage(app, service?.type || 'מפגש');
-    sendWhatsAppMessage(app.clientPhone, msg);
+    sendWhatsAppMessage(app.clientPhone, getConfirmationMessage(app, service?.type || 'מפגש'));
     setNotification({ message: 'המפגש אושר והודעה נשלחה למטופלת', type: 'success' });
     setConfirmAction(null);
     fetchData();
@@ -85,8 +84,7 @@ const AdminDashboard: React.FC = () => {
   const handleCancelAndNotify = async (app: Appointment) => {
     await cancelAppointment(app.id);
     const service = services.find(s => s.id === app.serviceId);
-    const msg = await getCancellationMessage(app, service?.type || 'מפגש');
-    sendWhatsAppMessage(app.clientPhone, msg);
+    sendWhatsAppMessage(app.clientPhone, getCancellationMessage(app, service?.type || 'מפגש'));
     setNotification({ message: 'המפגש בוטל והודעה נשלחה למטופלת', type: 'success' });
     setConfirmAction(null);
     fetchData();
@@ -557,14 +555,14 @@ const AppointmentCard: React.FC<{
 }> = ({ app, services, onEdit, onCancel, onDelete, onConfirm }) => {
   const service = services.find(s => s.id === app.serviceId);
 
-  const handleWhatsApp = async () => {
+  const handleWhatsApp = () => {
     let message = '';
     if (app.status === 'confirmed') {
-      message = await getReminderMessage(app, service?.type || 'מפגש');
+      message = getReminderMessage(app, service?.type || 'מפגש');
     } else if (app.status === 'pending') {
-      message = await getPendingMessage(app, service?.type || 'מפגש');
+      message = getPendingMessage(app, service?.type || 'מפגש');
     } else {
-      message = await getCancellationMessage(app, service?.type || 'מפגש');
+      message = getCancellationMessage(app, service?.type || 'מפגש');
     }
     sendWhatsAppMessage(app.clientPhone, message);
   };
