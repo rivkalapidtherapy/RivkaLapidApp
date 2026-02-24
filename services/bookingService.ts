@@ -1,0 +1,305 @@
+
+import { Appointment, ServiceType, ClinicStats, Service, GalleryItem, DailyHours, MessageTemplates } from "../types";
+import { WORK_HOURS as INITIAL_HOURS, SERVICES as INITIAL_SERVICES } from "../constants";
+import { supabase } from "../lib/supabase";
+
+// Default working hours: Sun-Thu 09:00-17:00
+const DEFAULT_DAILY_HOURS: DailyHours = {
+  0: [...INITIAL_HOURS],
+  1: [...INITIAL_HOURS],
+  2: [...INITIAL_HOURS],
+  3: [...INITIAL_HOURS],
+  4: [...INITIAL_HOURS],
+  5: [], // Friday empty by default
+  6: []  // Saturday empty by default
+};
+
+let appointments: Appointment[] = [
+  {
+    id: '1',
+    serviceId: '1',
+    clientName: 'מיכל ישראלי',
+    clientEmail: 'michal@example.com',
+    clientPhone: '0541234567',
+    date: new Date().toISOString().split('T')[0],
+    time: '10:00',
+    status: 'confirmed',
+    spiritualInsight: 'הלב שלך מוכן לשלב הבא של הריפוי.',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: '2',
+    serviceId: '2',
+    clientName: 'דנה לוי',
+    clientEmail: 'dana@example.com',
+    clientPhone: '0529876543',
+    date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+    time: '12:00',
+    status: 'pending',
+    spiritualInsight: 'התשובות שאת מחפשת נמצאות בתוכך.',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: '3',
+    serviceId: '3',
+    clientName: 'רונית כהן',
+    clientEmail: 'ronit@example.com',
+    clientPhone: '0501112223',
+    date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+    time: '16:00',
+    status: 'confirmed',
+    spiritualInsight: 'השינוי מתחיל בצעד קטן של אמונה.',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: '4',
+    serviceId: '1',
+    clientName: 'איילת שחר',
+    clientEmail: 'ayelet@example.com',
+    clientPhone: '0544445556',
+    date: new Date(Date.now() + 172800000).toISOString().split('T')[0],
+    time: '09:00',
+    status: 'confirmed',
+    spiritualInsight: 'המספרים שלך מעידים על כוח פנימי עצום.',
+    createdAt: new Date().toISOString()
+  }
+];
+
+let dynamicServices: Service[] = [...INITIAL_SERVICES];
+let dailyWorkingHours: DailyHours = { ...DEFAULT_DAILY_HOURS };
+let galleryItems: GalleryItem[] = [
+  { id: '1', url: 'https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d', title: 'נרות זן', category: 'אווירה' },
+  { id: '2', url: 'https://images.unsplash.com/photo-1515516089376-88db1e26e9c0', title: 'אבני איזון', category: 'ריפוי' },
+  { id: '3', url: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773', title: 'מדיטציה', category: 'רוחניות' }
+];
+
+let messageTemplates: MessageTemplates = {
+  confirmation: `שלום {clientName}, איזה כיף! 🌿
+נקבע לנו מפגש של {serviceName} בקליניקה של רבקה לפיד.
+
+📅 תאריך: {date}
+⏰ שעה: {time}
+
+כוונה רוחנית עבורך:
+"{spiritualInsight}"
+
+מחכה לראותך! ✨`,
+  cancellation: `שלום {clientName},
+המפגש שלנו ל-{serviceName} בתאריך {date} בשעה {time} בוטל.
+ניתן ליצור קשר לתיאום מועד חדש.
+יום שקט, רבקה.`,
+  reminder: `היי {clientName}, מזכירה לך באהבה על המפגש שלנו מחר ({date}) בשעה {time}.
+מחכה לראות אותך! 🌿`,
+  pending: `שלום {clientName}, קיבלתי את בקשתך למפגש {serviceName} בתאריך {date} בשעה {time}.
+התור ממתין לאישור סופי שלי, אעדכן אותך בהקדם! ✨`
+};
+
+export const getAppointments = async (): Promise<Appointment[]> => {
+  if (supabase) {
+    const { data, error } = await supabase.from('appointments').select('*').order('date', { ascending: false });
+    if (!error && data) {
+      return data.map(d => ({
+        id: d.id,
+        serviceId: d.service_id,
+        clientName: d.client_name,
+        clientEmail: d.client_email,
+        clientPhone: d.client_phone,
+        date: d.date,
+        time: d.time,
+        status: d.status,
+        spiritualInsight: d.spiritual_insight,
+        createdAt: d.created_at
+      }));
+    }
+  }
+  return [...appointments];
+};
+
+export const addAppointment = async (app: Omit<Appointment, 'id' | 'createdAt' | 'status'>): Promise<Appointment> => {
+  if (supabase) {
+    const { data, error } = await supabase.from('appointments').insert([{
+      service_id: app.serviceId,
+      client_name: app.clientName,
+      client_email: app.clientEmail,
+      client_phone: app.clientPhone,
+      date: app.date,
+      time: app.time,
+      status: 'pending',
+      spiritual_insight: app.spiritualInsight
+    }]).select().single();
+    
+    if (!error && data) {
+      return {
+        id: data.id,
+        serviceId: data.service_id,
+        clientName: data.client_name,
+        clientEmail: data.client_email,
+        clientPhone: data.client_phone,
+        date: data.date,
+        time: data.time,
+        status: data.status,
+        spiritualInsight: data.spiritual_insight,
+        createdAt: data.created_at
+      };
+    }
+  }
+
+  const newApp = { 
+    ...app, 
+    id: Math.random().toString(36).substr(2, 9),
+    status: 'pending' as const,
+    createdAt: new Date().toISOString()
+  };
+  appointments.push(newApp as Appointment);
+  return newApp as Appointment;
+};
+
+export const confirmAppointment = async (id: string): Promise<void> => {
+  if (supabase) {
+    await supabase.from('appointments').update({ status: 'confirmed' }).eq('id', id);
+  }
+  appointments = appointments.map(a => a.id === id ? { ...a, status: 'confirmed' } : a);
+};
+
+export const updateAppointment = async (id: string, data: Partial<Appointment>): Promise<void> => {
+  if (supabase) {
+    const updateData: any = {};
+    if (data.serviceId) updateData.service_id = data.serviceId;
+    if (data.clientName) updateData.client_name = data.clientName;
+    if (data.clientEmail) updateData.client_email = data.clientEmail;
+    if (data.clientPhone) updateData.client_phone = data.clientPhone;
+    if (data.date) updateData.date = data.date;
+    if (data.time) updateData.time = data.time;
+    if (data.status) updateData.status = data.status;
+    if (data.spiritualInsight) updateData.spiritual_insight = data.spiritualInsight;
+    
+    await supabase.from('appointments').update(updateData).eq('id', id);
+  }
+  appointments = appointments.map(a => a.id === id ? { ...a, ...data } : a);
+};
+
+export const cancelAppointment = async (id: string): Promise<void> => {
+  if (supabase) {
+    await supabase.from('appointments').update({ status: 'cancelled' }).eq('id', id);
+  }
+  appointments = appointments.map(a => a.id === id ? { ...a, status: 'cancelled' } : a);
+};
+
+export const deleteAppointment = async (id: string): Promise<void> => {
+  if (supabase) {
+    await supabase.from('appointments').delete().eq('id', id);
+  }
+  appointments = appointments.filter(a => a.id !== id);
+};
+
+export const getAvailabilityForDate = async (dateStr: string): Promise<string[]> => {
+  const date = new Date(dateStr);
+  const dayOfWeek = date.getDay();
+  const baseHours = dailyWorkingHours[dayOfWeek] || [];
+  
+  const dayBookings = appointments.filter(a => a.date === dateStr && a.status !== 'cancelled');
+  const bookedTimes = dayBookings.map(a => a.time);
+  
+  return baseHours.filter(time => !bookedTimes.includes(time));
+};
+
+export const getDailyWorkingHours = async (): Promise<DailyHours> => {
+  return { ...dailyWorkingHours };
+};
+
+export const updateDailyWorkingHours = async (hours: DailyHours): Promise<void> => {
+  dailyWorkingHours = { ...hours };
+};
+
+export const getClinicStats = async (): Promise<ClinicStats> => {
+  const active = appointments.filter(a => a.status === 'confirmed');
+  const revenue = active.reduce((sum, a) => {
+    const service = dynamicServices.find(s => s.id === a.serviceId);
+    return sum + (service?.price || 0);
+  }, 0);
+
+  const serviceCounts = active.reduce((acc: any, a) => {
+    acc[a.serviceId] = (acc[a.serviceId] || 0) + 1;
+    return acc;
+  }, {});
+
+  const topServiceId = Object.keys(serviceCounts).reduce((a, b) => serviceCounts[a] > serviceCounts[b] ? a : b, '1');
+  const topService = dynamicServices.find(s => s.id === topServiceId)?.type || 'כללי';
+
+  return {
+    totalRevenue: revenue,
+    upcomingAppointments: active.filter(a => new Date(a.date) >= new Date()).length,
+    activeClients: new Set(active.map(a => a.clientEmail)).size,
+    topService: topService,
+    monthlyGrowth: 12.5 
+  };
+};
+
+export const getAdminServices = async (): Promise<Service[]> => {
+  return [...dynamicServices];
+};
+
+export const updateService = async (updated: Service): Promise<void> => {
+  dynamicServices = dynamicServices.map(s => s.id === updated.id ? updated : s);
+};
+
+export const addService = async (service: Omit<Service, 'id'>): Promise<void> => {
+  dynamicServices.push({ ...service, id: Date.now().toString() });
+};
+
+export const deleteService = async (id: string): Promise<void> => {
+  dynamicServices = dynamicServices.filter(s => s.id !== id);
+};
+
+export const getGallery = async (): Promise<GalleryItem[]> => {
+  return [...galleryItems];
+};
+
+export const addGalleryItem = async (item: Omit<GalleryItem, 'id'>): Promise<void> => {
+  galleryItems.push({ ...item, id: Date.now().toString() });
+};
+
+export const deleteGalleryItem = async (id: string): Promise<void> => {
+  galleryItems = galleryItems.filter(i => i.id !== id);
+};
+
+// WhatsApp Integration Helper
+export const sendWhatsAppMessage = (phone: string, message: string) => {
+  const cleanPhone = phone.replace(/\D/g, '');
+  const finalPhone = cleanPhone.startsWith('0') ? '972' + cleanPhone.substring(1) : cleanPhone;
+  const url = `https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`;
+  window.open(url, '_blank');
+};
+
+export const getMessageTemplates = async (): Promise<MessageTemplates> => {
+  return { ...messageTemplates };
+};
+
+export const updateMessageTemplates = async (templates: MessageTemplates): Promise<void> => {
+  messageTemplates = { ...templates };
+};
+
+const formatMessage = (template: string, app: Appointment, serviceName: string) => {
+  return template
+    .replace(/{clientName}/g, app.clientName)
+    .replace(/{date}/g, app.date)
+    .replace(/{time}/g, app.time)
+    .replace(/{serviceName}/g, serviceName)
+    .replace(/{spiritualInsight}/g, app.spiritualInsight || '');
+};
+
+export const getConfirmationMessage = (app: Appointment, serviceName: string) => {
+  return formatMessage(messageTemplates.confirmation, app, serviceName);
+};
+
+export const getCancellationMessage = (app: Appointment, serviceName: string) => {
+  return formatMessage(messageTemplates.cancellation, app, serviceName);
+};
+
+export const getReminderMessage = (app: Appointment, serviceName: string) => {
+  return formatMessage(messageTemplates.reminder, app, serviceName);
+};
+
+export const getPendingMessage = (app: Appointment, serviceName: string) => {
+  return formatMessage(messageTemplates.pending, app, serviceName);
+};
