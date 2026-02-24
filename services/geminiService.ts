@@ -2,7 +2,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { ServiceType } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
 export const getSpiritualInsight = async (serviceType: ServiceType, clientName: string): Promise<string> => {
   try {
