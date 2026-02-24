@@ -342,13 +342,6 @@ const App: React.FC = () => {
                 תודה {lastAppointment?.clientName}, הבקשה למפגש שלך ב-{lastAppointment?.date} בשעה {lastAppointment?.time} נשמרה במערכת וממתינה לאישור סופי של רבקה.
               </p>
             </div>
-            {lastAppointment?.spiritualInsight && (
-              <div className="bg-white p-12 border border-stone-100 italic serif text-stone-600 text-2xl shadow-sm rounded-2xl relative">
-                <span className="absolute top-6 right-8 text-6xl text-stone-100/50 serif font-bold">"</span>
-                {lastAppointment.spiritualInsight}
-                <span className="absolute bottom-4 left-8 text-6xl text-stone-100/50 serif font-bold">"</span>
-              </div>
-            )}
             <div className="pt-8 flex flex-col md:flex-row items-center justify-center gap-4">
               <Button onClick={() => {
                 if (lastAppointment) {

@@ -81,9 +81,6 @@ let messageTemplates: MessageTemplates = {
 🗓️ מתי? {date}
 ⏰ באיזו שעה? {time}
 
-מסר קטן מדויק עבורך:
-"{spiritualInsight}"
-
 מחכה לראותך ולצאת לדרך משותפת! ✨
 רבקה לפיד.`,
   cancellation: `שלום {clientName},

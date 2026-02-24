@@ -5,7 +5,6 @@ import { SERVICES as INITIAL_SERVICES } from '../constants';
 import { Service, Appointment } from '../types';
 import { Button, Card, Input } from './UI';
 import { getAvailabilityForDate, addAppointment, sendWhatsAppMessage, getConfirmationMessage, getAdminServices } from '../services/bookingService';
-import { getSpiritualInsight } from '../services/geminiService';
 
 interface BookingFlowProps {
   onComplete: (appointment: Appointment) => void;
@@ -73,23 +72,10 @@ const BookingFlow: React.FC<BookingFlowProps> = ({ onComplete, onCancel, initial
         clientPhone: clientInfo.phone,
         date: selectedDate,
         time: selectedTime,
-        spiritualInsight: "" // Will be updated async
+        spiritualInsight: ""
       };
 
       const result = await addAppointment(newApp);
-
-      // Fire and forget: generate insight and update DB without blocking the user
-      getSpiritualInsight(selectedService.type, clientInfo.name)
-        .then(async (insight) => {
-          // Wait for a second just in case DB needs time to sync, although not strictly necessary
-          // But we don't need to await here, we just call update
-          if (insight) {
-            import('../services/bookingService').then(({ updateAppointment }) => {
-              updateAppointment(result.id, { spiritualInsight: insight });
-            });
-          }
-        })
-        .catch(console.error);
 
       onComplete(result);
     } catch (err) {

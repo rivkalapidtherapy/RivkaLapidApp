@@ -72,14 +72,11 @@ ON CONFLICT (day_of_week) DO NOTHING;
 
 -- Insert default message templates
 INSERT INTO message_templates (key, value) VALUES
-('confirmation', 'שלום {clientName} היקרה 💕
+('confirmation', 'שלום {clientName} היקר/ה 💕
 איזה כיף! נקבע לנו מפגש של {serviceName}.
 
 🗓️ מתי? {date}
 ⏰ באיזו שעה? {time}
-
-מסר קטן עבורך לקראת המפגש:
-"{spiritualInsight}"
 
 מחכה לראותך ולצאת לדרך משותפת! ✨
 רבקה לפיד.'),
