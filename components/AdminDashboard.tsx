@@ -2,13 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MessageCircle, Edit2, XCircle, Trash2, CheckCircle2, Clock, Calendar as CalendarIcon, User, AlertTriangle, CheckCircle, ChevronLeft, ChevronRight, Check, Mail, RefreshCw } from 'lucide-react';
-import { Appointment, ClinicStats, Service, AdminTab, GalleryItem, DailyHours, ServiceType, MessageTemplates } from '../types';
+import { Appointment, ClinicStats, Service, AdminTab, GalleryItem, DailyHours, ServiceType, MessageTemplates, NumerologyInsights } from '../types';
 import {
   getAppointments, cancelAppointment, deleteAppointment, getClinicStats, getAdminServices,
   updateService, updateAppointment, getDailyWorkingHours, updateDailyWorkingHours,
   getGallery, addGalleryItem, deleteGalleryItem, sendWhatsAppMessage, getConfirmationMessage, getCancellationMessage,
   addService, deleteService, confirmAppointment, getMessageTemplates, updateMessageTemplates, getReminderMessage, getPendingMessage,
-  uploadImage
+  uploadImage, getNumerologyInsights, updateNumerologyInsights
 } from '../services/bookingService';
 import { getWeeklyJournal } from '../services/geminiService';
 import { Card, Button, Input } from './UI';
@@ -35,6 +35,7 @@ const AdminDashboard: React.FC = () => {
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date>(new Date());
   const [calendarFilterDate, setCalendarFilterDate] = useState<string | null>(null);
   const [templates, setTemplates] = useState<MessageTemplates | null>(null);
+  const [numerologyInsights, setNumerologyInsights] = useState<NumerologyInsights | null>(null);
 
   useEffect(() => {
     if (notification) {
@@ -49,13 +50,14 @@ const AdminDashboard: React.FC = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [apps, st, svcs, hours, gal, tmpls] = await Promise.all([
+    const [apps, st, svcs, hours, gal, tmpls, numInsights] = await Promise.all([
       getAppointments(),
       getClinicStats(),
       getAdminServices(),
       getDailyWorkingHours(),
       getGallery(),
-      getMessageTemplates()
+      getMessageTemplates(),
+      getNumerologyInsights()
     ]);
     setAppointments(apps.sort((a, b) => b.date.localeCompare(a.date)));
     setStats(st);
@@ -63,6 +65,7 @@ const AdminDashboard: React.FC = () => {
     setDailyHours(hours);
     setGallery(gal);
     setTemplates(tmpls);
+    setNumerologyInsights(numInsights);
 
     if (activeTab === 'journal') {
       const summary = await getWeeklyJournal(apps, svcs);
@@ -349,6 +352,17 @@ const AdminDashboard: React.FC = () => {
                   setNotification({ message: 'תבניות ההודעות עודכנו בהצלחה', type: 'success' });
                 }}
               />
+
+              {numerologyInsights && (
+                <NumerologySettings
+                  insights={numerologyInsights}
+                  onUpdate={(updated) => {
+                    setNumerologyInsights(updated);
+                    updateNumerologyInsights(updated);
+                    setNotification({ message: 'מסרי הנומרולוגיה עודכנו בהצלחה', type: 'success' });
+                  }}
+                />
+              )}
             </div>
           )}
 
@@ -761,6 +775,40 @@ const TemplateSettings: React.FC<{ templates: MessageTemplates; onUpdate: (t: Me
               value={localTemplates[key]}
               onChange={(e) => handleChange(key, e.target.value)}
               onBlur={() => onUpdate(localTemplates)}
+            />
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+};
+
+const NumerologySettings: React.FC<{ insights: NumerologyInsights; onUpdate: (t: NumerologyInsights) => void }> = ({ insights, onUpdate }) => {
+  const [localInsights, setLocalInsights] = useState(insights);
+
+  const handleChange = (key: number, value: string) => {
+    const updated = { ...localInsights, [key]: value };
+    setLocalInsights(updated);
+  };
+
+  return (
+    <Card className="space-y-10 !p-12 mt-8">
+      <div className="border-b border-stone-100 pb-6">
+        <h3 className="text-2xl font-light">ניהול חוויה נומרולוגית (מספר 1-9)</h3>
+        <p className="text-stone-400 text-sm mt-2">ההודעות שיוצגו ללקוחה בעת הזנת תאריך הלידה בעמוד קביעת התור.</p>
+      </div>
+
+      <div className="space-y-8">
+        {([1, 2, 3, 4, 5, 6, 7, 8, 9]).map(num => (
+          <div key={num} className="space-y-3">
+            <label className="block text-[10px] font-bold uppercase tracking-widest text-stone-400">
+              שנה אישית מס' {num}
+            </label>
+            <textarea
+              className="w-full bg-stone-50 border border-stone-100 rounded-2xl p-6 text-sm text-stone-600 focus:ring-1 focus:ring-[#7d7463] outline-none min-h-[100px] resize-none"
+              value={localInsights[num] || ''}
+              onChange={(e) => handleChange(num, e.target.value)}
+              onBlur={() => onUpdate(localInsights)}
             />
           </div>
         ))}

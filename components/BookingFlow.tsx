@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SERVICES as INITIAL_SERVICES } from '../constants';
-import { Service, Appointment } from '../types';
+import { Service, Appointment, NumerologyInsights } from '../types';
 import { Button, Card, Input } from './UI';
-import { getAvailabilityForDate, addAppointment, sendWhatsAppMessage, getConfirmationMessage, getAdminServices } from '../services/bookingService';
+import { getAvailabilityForDate, addAppointment, sendWhatsAppMessage, getConfirmationMessage, getAdminServices, getNumerologyInsights } from '../services/bookingService';
 
 interface BookingFlowProps {
   onComplete: (appointment: Appointment) => void;
@@ -24,20 +24,25 @@ const BookingFlow: React.FC<BookingFlowProps> = ({ onComplete, onCancel, initial
   const [loading, setLoading] = useState(false);
   const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
   const [personalYearInsight, setPersonalYearInsight] = useState<string | null>(null);
+  const [insightsMap, setInsightsMap] = useState<NumerologyInsights | null>(null);
 
   useEffect(() => {
-    const fetchServices = async () => {
-      const data = await getAdminServices();
-      if (data && data.length > 0) {
-        setServices(data);
+    const fetchData = async () => {
+      const [svcData, numInsights] = await Promise.all([
+        getAdminServices(),
+        getNumerologyInsights()
+      ]);
+      if (svcData && svcData.length > 0) {
+        setServices(svcData);
         if (initialServiceId) {
-          const found = data.find(s => s.id === initialServiceId);
+          const found = svcData.find(s => s.id === initialServiceId);
           if (found) setSelectedService(found);
         }
       }
+      setInsightsMap(numInsights);
     };
-    fetchServices();
-  }, []);
+    fetchData();
+  }, [initialServiceId]);
 
   // גלילה לראש הדף בכל שינוי שלב
   useEffect(() => {
@@ -77,19 +82,8 @@ const BookingFlow: React.FC<BookingFlowProps> = ({ onComplete, onCancel, initial
       sum = sum.toString().split('').reduce((a, b) => a + parseInt(b), 0);
     }
 
-    const insights: Record<number, string> = {
-      1: "את נמצאת בשנת 1 - שנה של התחלות חדשות, יוזמה ופריצת דרך. עידן חדש נפתח עבורך. תזמון מושלם לטיפול!",
-      2: "את נמצאת בשנת 2 - שנה של חיבור, רגישות וזוגיות. זמן לעבוד על שיתופי פעולה והקשבה פנימית.",
-      3: "את נמצאת בשנת 3 - שנה של ביטוי אישי, יצירתיות ושמחה. הגעת כדי להוציא את הקול שלך החוצה.",
-      4: "את נמצאת בשנת 4 - שנה של בניה, יציבות ומיקוד. זמן להניח יסודות חזקים לעתיד שלך. טיפול יעזור למרכז אותך.",
-      5: "את נמצאת בשנת 5 - שנה של תנועה, שחרור ושינויים. הקליניקה היא מקום בטוח לעבד את כל ההתפתחויות האלה.",
-      6: "את נמצאת בשנת 6 - שנה של משפחה, הרמוניה ואהבה. זמן לטפל בבית הפנימי שלך. אני כאן בשבילך.",
-      7: "את נמצאת בשנת 7 - שנה של חקירה פנימית, התבוננות וצמיחה רוחנית. זו שנה שקוראת לטיפול ולגילוי עצמי עמוק.",
-      8: "את נמצאת בשנת 8 - שנה של עוצמה, קריירה ומימוש. זמן לקטוף פירות. נלמד איך להחזיק את הכוח הזה יחד.",
-      9: "את נמצאת בשנת 9 - שנה של סיומים, סגירת מעגלים ושחרור. הטיפול יסייע לך להרפות ממה שלא משרת אותך יותר לקראת התחלה חדשה."
-    };
-
-    return insights[sum] || null;
+    if (!insightsMap) return null;
+    return insightsMap[sum] || null;
   };
 
   useEffect(() => {

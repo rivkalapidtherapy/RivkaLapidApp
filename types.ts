@@ -58,3 +58,4 @@ export interface MessageTemplates {
 
 export type AppView = 'home' | 'booking' | 'admin' | 'confirmation';
 export type AdminTab = 'calendar' | 'appointments' | 'services' | 'analytics' | 'journal' | 'gallery' | 'settings';
+export type NumerologyInsights = Record<number, string>;

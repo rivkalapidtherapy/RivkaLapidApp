@@ -1,5 +1,4 @@
-
-import { Appointment, ServiceType, ClinicStats, Service, GalleryItem, DailyHours, MessageTemplates } from "../types";
+import { Appointment, ServiceType, ClinicStats, Service, GalleryItem, DailyHours, MessageTemplates, NumerologyInsights } from "../types";
 import { WORK_HOURS as INITIAL_HOURS, SERVICES as INITIAL_SERVICES } from "../constants";
 import { supabase } from "../lib/supabase";
 
@@ -99,6 +98,26 @@ let messageTemplates: MessageTemplates = {
 
 התור כרגע ממתין לאישור סופי ביומן שלי, העדכון יישלח ממש בקרוב! ✨
 רבקה.`
+};
+
+let numerologyInsights: NumerologyInsights = {
+  1: "את נמצאת בשנת 1 - שנה של התחלות חדשות, יוזמה ופריצת דרך. עידן חדש נפתח עבורך. תזמון מושלם לטיפול!",
+  2: "את נמצאת בשנת 2 - שנה של חיבור, רגישות וזוגיות. זמן לעבוד על שיתופי פעולה והקשבה פנימית.",
+  3: "את נמצאת בשנת 3 - שנה של ביטוי אישי, יצירתיות ושמחה. הגעת כדי להוציא את הקול שלך החוצה.",
+  4: "את נמצאת בשנת 4 - שנה של בניה, יציבות ומיקוד. זמן להניח יסודות חזקים לעתיד שלך. טיפול יעזור למרכז אותך.",
+  5: "את נמצאת בשנת 5 - שנה של תנועה, שחרור ושינויים. הקליניקה היא מקום בטוח לעבד את כל ההתפתחויות האלה.",
+  6: "את נמצאת בשנת 6 - שנה של משפחה, הרמוניה ואהבה. זמן לטפל בבית הפנימי שלך. אני כאן בשבילך.",
+  7: "את נמצאת בשנת 7 - שנה של חקירה פנימית, התבוננות וצמיחה רוחנית. זו שנה שקוראת לטיפול ולגילוי עצמי עמוק.",
+  8: "את נמצאת בשנת 8 - שנה של עוצמה, קריירה ומימוש. זמן לקטוף פירות. נלמד איך להחזיק את הכוח הזה יחד.",
+  9: "את נמצאת בשנת 9 - שנה של סיומים, סגירת מעגלים ושחרור. הטיפול יסייע לך להרפות ממה שלא משרת אותך יותר לקראת התחלה חדשה."
+};
+
+export const getNumerologyInsights = async (): Promise<NumerologyInsights> => {
+  return { ...numerologyInsights };
+};
+
+export const updateNumerologyInsights = async (insights: NumerologyInsights): Promise<void> => {
+  numerologyInsights = { ...insights };
 };
 
 export const getAppointments = async (): Promise<Appointment[]> => {
