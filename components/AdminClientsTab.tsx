@@ -81,7 +81,7 @@ export const AdminClientsTab: React.FC<AdminClientsTabProps> = ({ appointments }
         <div className="grid lg:grid-cols-3 gap-8">
             {/* Sidebar: Client List */}
             <div className="lg:col-span-1 space-y-4">
-                <h3 className="text-xl font-light text-stone-800 mb-6">מטופלות אחרונות</h3>
+                <h3 className="text-xl font-light text-stone-800 mb-6">לקוחות אחרונים</h3>
                 <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                     {clients.map(client => (
                         <button
@@ -106,7 +106,7 @@ export const AdminClientsTab: React.FC<AdminClientsTabProps> = ({ appointments }
                         </button>
                     ))}
                     {clients.length === 0 && (
-                        <div className="text-center py-10 text-stone-400 italic text-sm">לא נמצאו מטופלות במערכת.</div>
+                        <div className="text-center py-10 text-stone-400 italic text-sm">לא נמצאו לקוחות במערכת.</div>
                     )}
                 </div>
             </div>
@@ -125,7 +125,7 @@ export const AdminClientsTab: React.FC<AdminClientsTabProps> = ({ appointments }
                                 <div className="flex items-center gap-2 justify-end">
                                     <Button variant="outline" onClick={() => {
                                         const link = `${window.location.origin}/?portal=${selectedClientPhone}`;
-                                        const message = `שלום ${selectedClient.name} אהובה 💕\nזהו הקישור האישי שלך ליומן המסע שלנו יחד:\n${link}`;
+                                        const message = `שלום ${selectedClient.name} 💕\nמצורף הקישור ליומן המסע האישי שלך:\n${link}`;
                                         sendWhatsAppMessage(selectedClient.phone, message);
                                     }} className="rounded-xl flex items-center gap-2 bg-green-50 text-green-600 border-green-200 hover:bg-green-100 shadow-sm hover:scale-105 transition-all">
                                         שליחה בוואטסאפ
@@ -146,7 +146,7 @@ export const AdminClientsTab: React.FC<AdminClientsTabProps> = ({ appointments }
 
                             <form onSubmit={handleAddNote} className="mb-8 space-y-4">
                                 <textarea
-                                    placeholder="כתבי כאן סיכום לאזור האישי של המטופלת..."
+                                    placeholder="כתיבת סיכום לאזור האישי..."
                                     className="w-full bg-stone-50 border border-stone-200 rounded-2xl p-4 min-h-[120px] focus:ring-1 focus:ring-[#7d7463] outline-none text-right resize-none"
                                     value={newNoteContent}
                                     onChange={(e) => setNewNoteContent(e.target.value)}
@@ -160,7 +160,7 @@ export const AdminClientsTab: React.FC<AdminClientsTabProps> = ({ appointments }
                                 {loadingNotes ? (
                                     <div className="flex justify-center p-6"><div className="w-6 h-6 border-2 border-stone-200 border-t-[#7d7463] rounded-full animate-spin" /></div>
                                 ) : notes.length === 0 ? (
-                                    <p className="text-stone-400 text-sm italic text-center py-6">טרם נכתבו סיכומים למטופלת זו.</p>
+                                    <p className="text-stone-400 text-sm italic text-center py-6">טרם נכתבו סיכומים עבור לקוח/ה זה/ו.</p>
                                 ) : (
                                     notes.map(note => (
                                         <div key={note.id} className="bg-stone-50/50 p-6 rounded-2xl border border-stone-100">
@@ -176,7 +176,7 @@ export const AdminClientsTab: React.FC<AdminClientsTabProps> = ({ appointments }
                     </motion.div>
                 ) : (
                     <div className="h-full bg-white/50 border border-dashed border-stone-200 rounded-3xl flex items-center justify-center p-12 text-center text-stone-400 italic">
-                        בחרי מטופלת מרשימת המטופלות כדי לצפות ולערוך את יומן המסע שלה
+                        יש לבחור לקוח/ה מהרשימה כדי לצפות ולערוך את יומן המסע
                     </div>
                 )}
             </div>

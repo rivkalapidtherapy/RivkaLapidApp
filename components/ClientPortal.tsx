@@ -51,8 +51,8 @@ const ClientPortal: React.FC<ClientPortalProps> = ({ clientPhone, onClose }) => 
             <div className="max-w-3xl mx-auto space-y-12">
                 <header className="flex justify-between items-center pb-8 border-b border-stone-200">
                     <div>
-                        <h1 className="text-3xl font-light mb-2">שלום {clientName || 'אהובה'},</h1>
-                        <p className="text-stone-500 font-light">ברוכה הבאה ליומן המסע האישי שלך.</p>
+                        <h1 className="text-3xl font-light mb-2">שלום {clientName || 'לך'},</h1>
+                        <p className="text-stone-500 font-light">ברוכים הבאים ליומן המסע האישי שלך.</p>
                     </div>
                     <Button variant="outline" onClick={onClose} className="rounded-full flex items-center gap-2">
                         <ArrowRight className="w-4 h-4" /> חזרה
