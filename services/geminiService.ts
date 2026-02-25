@@ -1,4 +1,4 @@
-
+/// <reference types="vite/client" />
 import { GoogleGenAI } from "@google/genai";
 import { ServiceType, Appointment, Service } from "../types";
 

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AppView, Appointment } from './types';
 import BookingFlow from './components/BookingFlow';
 import AdminDashboard from './components/AdminDashboard';
+import ClientPortal from './components/ClientPortal';
 import { getDailyGreeting } from './services/geminiService';
 import { Button } from './components/UI';
 import { SERVICES as INITIAL_SERVICES, COLORS } from './constants';
@@ -20,6 +21,7 @@ const App: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
+  const [portalPhone, setPortalPhone] = useState<string | null>(null);
 
   // גלילה לראש הדף בכל החלפת תצוגה
   useEffect(() => {
@@ -36,6 +38,15 @@ const App: React.FC = () => {
         setServices(data);
       }
     });
+
+    const urlParams = new URL(window.location.href);
+    const portalPhoneParam = urlParams.searchParams.get('portal');
+    if (portalPhoneParam) {
+      setPortalPhone(portalPhoneParam);
+      setView('portal');
+      // Clean up URL without reload
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -357,6 +368,10 @@ const App: React.FC = () => {
             </div>
           </div>
         );
+
+      case 'portal':
+        if (!portalPhone) return null;
+        return <ClientPortal clientPhone={portalPhone} onClose={() => setView('home')} />;
     }
   };
 

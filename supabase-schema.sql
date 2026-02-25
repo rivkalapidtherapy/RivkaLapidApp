@@ -59,6 +59,15 @@ CREATE TABLE IF NOT EXISTS message_templates (
   value TEXT NOT NULL
 );
 
+-- 6. Journey Notes Table
+CREATE TABLE IF NOT EXISTS journey_notes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  client_phone TEXT NOT NULL,
+  client_name TEXT NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Insert default working hours
 INSERT INTO working_hours (day_of_week, hours) VALUES
 (0, '["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]'),

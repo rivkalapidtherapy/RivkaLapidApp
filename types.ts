@@ -56,6 +56,14 @@ export interface MessageTemplates {
   pending: string;
 }
 
-export type AppView = 'home' | 'booking' | 'admin' | 'confirmation';
-export type AdminTab = 'calendar' | 'appointments' | 'services' | 'analytics' | 'journal' | 'gallery' | 'settings';
+export type AppView = 'home' | 'booking' | 'admin' | 'confirmation' | 'portal';
+export type AdminTab = 'calendar' | 'appointments' | 'services' | 'analytics' | 'journal' | 'gallery' | 'settings' | 'clients';
 export type NumerologyInsights = Record<number, string>;
+
+export interface JourneyNote {
+  id: string;
+  clientPhone: string;
+  clientName: string;
+  content: string;
+  createdAt: string;
+}

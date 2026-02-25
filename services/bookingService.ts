@@ -1,4 +1,4 @@
-import { Appointment, ServiceType, ClinicStats, Service, GalleryItem, DailyHours, MessageTemplates, NumerologyInsights } from "../types";
+import { Appointment, ServiceType, ClinicStats, Service, GalleryItem, DailyHours, MessageTemplates, NumerologyInsights, JourneyNote } from "../types";
 import { WORK_HOURS as INITIAL_HOURS, SERVICES as INITIAL_SERVICES } from "../constants";
 import { supabase } from "../lib/supabase";
 
@@ -118,6 +118,53 @@ export const getNumerologyInsights = async (): Promise<NumerologyInsights> => {
 
 export const updateNumerologyInsights = async (insights: NumerologyInsights): Promise<void> => {
   numerologyInsights = { ...insights };
+};
+
+export const getJourneyNotes = async (clientPhone?: string): Promise<JourneyNote[]> => {
+  if (supabase) {
+    let query = supabase.from('journey_notes').select('*').order('created_at', { ascending: false });
+    if (clientPhone) {
+      query = query.eq('client_phone', clientPhone);
+    }
+    const { data, error } = await query;
+    if (!error && data) {
+      return data.map(d => ({
+        id: d.id,
+        clientPhone: d.client_phone,
+        clientName: d.client_name,
+        content: d.content,
+        createdAt: d.created_at
+      }));
+    }
+  }
+  return [];
+};
+
+export const addJourneyNote = async (note: Omit<JourneyNote, 'id' | 'createdAt'>): Promise<JourneyNote | null> => {
+  if (supabase) {
+    const { data, error } = await supabase.from('journey_notes').insert([{
+      client_phone: note.clientPhone,
+      client_name: note.clientName,
+      content: note.content
+    }]).select().single();
+
+    if (!error && data) {
+      return {
+        id: data.id,
+        clientPhone: data.client_phone,
+        clientName: data.client_name,
+        content: data.content,
+        createdAt: data.created_at
+      };
+    }
+  }
+  return null;
+};
+
+export const deleteJourneyNote = async (id: string): Promise<void> => {
+  if (supabase) {
+    await supabase.from('journey_notes').delete().eq('id', id);
+  }
 };
 
 export const getAppointments = async (): Promise<Appointment[]> => {

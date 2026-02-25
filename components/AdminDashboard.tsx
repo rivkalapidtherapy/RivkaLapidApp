@@ -12,6 +12,7 @@ import {
 } from '../services/bookingService';
 import { getWeeklyJournal } from '../services/geminiService';
 import { Card, Button, Input } from './UI';
+import { AdminClientsTab } from './AdminClientsTab';
 
 const DAYS_HEBREW = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 const HOURS_POOL = Array.from({ length: 15 }, (_, i) => `${i + 8 < 10 ? '0' : ''}${i + 8}:00`);
@@ -184,7 +185,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap bg-stone-100/50 p-1.5 rounded-xl border border-stone-200/50 gap-1">
-          {(['appointments', 'calendar', 'services', 'gallery', 'analytics', 'journal', 'settings'] as AdminTab[]).map((tab) => (
+          {(['appointments', 'calendar', 'clients', 'services', 'gallery', 'analytics', 'journal', 'settings'] as AdminTab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -195,6 +196,7 @@ const AdminDashboard: React.FC = () => {
             >
               {tab === 'calendar' && 'יומן'}
               {tab === 'appointments' && 'מפגשים'}
+              {tab === 'clients' && 'מטופלות'}
               {tab === 'services' && 'שירותים'}
               {tab === 'gallery' && 'גלריה'}
               {tab === 'analytics' && 'תובנות'}
@@ -259,6 +261,10 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </div>
             </div>
+          )}
+
+          {activeTab === 'clients' && (
+            <AdminClientsTab appointments={appointments} />
           )}
 
           {activeTab === 'appointments' && (
