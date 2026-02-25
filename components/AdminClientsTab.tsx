@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Appointment, JourneyNote } from '../types';
-import { getJourneyNotes, addJourneyNote } from '../services/bookingService';
+import { getJourneyNotes, addJourneyNote, sendWhatsAppMessage } from '../services/bookingService';
 import { Card, Button, Input } from './UI';
 import { User, MessageSquare, Copy, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -88,8 +88,8 @@ export const AdminClientsTab: React.FC<AdminClientsTabProps> = ({ appointments }
                             key={client.phone}
                             onClick={() => setSelectedClientPhone(client.phone)}
                             className={`w-full text-right p-4 rounded-2xl border transition-all ${selectedClientPhone === client.phone
-                                    ? 'bg-[#7d7463] text-white border-[#7d7463] shadow-lg scale-105'
-                                    : 'bg-white text-stone-600 border-stone-100 hover:border-stone-200'
+                                ? 'bg-[#7d7463] text-white border-[#7d7463] shadow-lg scale-105'
+                                : 'bg-white text-stone-600 border-stone-100 hover:border-stone-200'
                                 }`}
                         >
                             <div className="flex items-center gap-3">
@@ -122,10 +122,19 @@ export const AdminClientsTab: React.FC<AdminClientsTabProps> = ({ appointments }
                             </div>
                             <div className="text-left">
                                 <p className="text-xs uppercase tracking-widest text-stone-400 font-bold mb-2">קישור לאזור האישי</p>
-                                <Button variant="outline" onClick={copyMagicLink} className={`rounded-xl flex items-center gap-2 ${copiedLink ? 'bg-green-50 text-green-600 border-green-200' : ''}`}>
-                                    {copiedLink ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                                    {copiedLink ? 'הקישור הועתק' : 'העתק קישור Magic Link'}
-                                </Button>
+                                <div className="flex items-center gap-2 justify-end">
+                                    <Button variant="outline" onClick={() => {
+                                        const link = `${window.location.origin}/?portal=${selectedClientPhone}`;
+                                        const message = `שלום ${selectedClient.name} אהובה 💕\nזהו הקישור האישי שלך ליומן המסע שלנו יחד:\n${link}`;
+                                        sendWhatsAppMessage(selectedClient.phone, message);
+                                    }} className="rounded-xl flex items-center gap-2 bg-green-50 text-green-600 border-green-200 hover:bg-green-100 shadow-sm hover:scale-105 transition-all">
+                                        שליחה בוואטסאפ
+                                    </Button>
+                                    <Button variant="outline" onClick={copyMagicLink} className={`rounded-xl flex items-center gap-2 shadow-sm hover:scale-105 transition-all ${copiedLink ? 'bg-green-50 text-green-600 border-green-200' : ''}`}>
+                                        {copiedLink ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                        {copiedLink ? 'הקישור הועתק' : 'העתקת קישור'}
+                                    </Button>
+                                </div>
                             </div>
                         </Card>
 
