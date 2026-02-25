@@ -47,7 +47,7 @@ const ClientPortal: React.FC<ClientPortalProps> = ({ clientPhone, onClose }) => 
     }
 
     return (
-        <div className="min-h-screen bg-[#f5f2ed] text-stone-800 p-6 md:p-12" dir="rtl">
+        <div className="min-h-screen bg-[#f5f2ed] text-stone-800 p-6 md:p-12 pt-32 md:pt-40" dir="rtl">
             <div className="max-w-3xl mx-auto space-y-12">
                 <header className="flex justify-between items-center pb-8 border-b border-stone-200">
                     <div>
@@ -106,8 +106,8 @@ const ClientPortal: React.FC<ClientPortalProps> = ({ clientPhone, onClose }) => 
                                             <p className="text-stone-400 mt-1">{app.date} בשעה {app.time}</p>
                                         </div>
                                         <div className={`px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${app.status === 'confirmed' ? 'bg-[#7d7463]/10 text-[#7d7463]' :
-                                                app.status === 'pending' ? 'bg-amber-100/50 text-amber-700' :
-                                                    'bg-red-50 text-red-500'
+                                            app.status === 'pending' ? 'bg-amber-100/50 text-amber-700' :
+                                                'bg-red-50 text-red-500'
                                             }`}>
                                             {app.status === 'confirmed' ? 'אושר' : app.status === 'pending' ? 'ממתין' : 'בוטל'}
                                         </div>
