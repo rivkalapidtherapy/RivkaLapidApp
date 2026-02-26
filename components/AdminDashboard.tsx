@@ -13,12 +13,13 @@ import {
 import { getWeeklyJournal } from '../services/geminiService';
 import { Card, Button, Input } from './UI';
 import { AdminClientsTab } from './AdminClientsTab';
+import { AdminMorningZenTab } from './AdminMorningZenTab';
 
 const DAYS_HEBREW = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 const HOURS_POOL = Array.from({ length: 15 }, (_, i) => `${i + 8 < 10 ? '0' : ''}${i + 8}:00`);
 
 const AdminDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<AdminTab>('appointments');
+  const [activeTab, setActiveTab] = useState<AdminTab>('morning');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [stats, setStats] = useState<ClinicStats | null>(null);
   const [services, setServices] = useState<Service[]>([]);
@@ -185,7 +186,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap bg-stone-100/50 p-1.5 rounded-xl border border-stone-200/50 gap-1">
-          {(['appointments', 'calendar', 'clients', 'services', 'gallery', 'analytics', 'journal', 'settings'] as AdminTab[]).map((tab) => (
+          {(['morning', 'appointments', 'calendar', 'clients', 'services', 'gallery', 'analytics', 'journal', 'settings'] as AdminTab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -194,6 +195,7 @@ const AdminDashboard: React.FC = () => {
                 : 'text-stone-500 hover:text-stone-800'
                 }`}
             >
+              {tab === 'morning' && 'בוקר טוב'}
               {tab === 'calendar' && 'יומן'}
               {tab === 'appointments' && 'מפגשים'}
               {tab === 'clients' && 'מטופלות'}
@@ -218,6 +220,10 @@ const AdminDashboard: React.FC = () => {
           animate={{ opacity: 1 }}
           className="space-y-8"
         >
+          {activeTab === 'morning' && (
+            <AdminMorningZenTab appointments={appointments} services={services} />
+          )}
+
           {activeTab === 'calendar' && (
             <div className="space-y-12">
               <Calendar

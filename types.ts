@@ -57,7 +57,7 @@ export interface MessageTemplates {
 }
 
 export type AppView = 'home' | 'booking' | 'admin' | 'confirmation' | 'portal';
-export type AdminTab = 'calendar' | 'appointments' | 'services' | 'analytics' | 'journal' | 'gallery' | 'settings' | 'clients';
+export type AdminTab = 'morning' | 'calendar' | 'appointments' | 'services' | 'analytics' | 'journal' | 'gallery' | 'settings' | 'clients';
 export type NumerologyInsights = Record<number, string>;
 
 export interface JourneyNote {
