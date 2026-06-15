@@ -423,7 +423,7 @@ const AdminDashboard: React.FC = () => {
                     {service.imageUrl && (
                       <div className="mt-2 h-20 w-full rounded-md overflow-hidden bg-stone-100 flex items-center justify-center relative">
                         <img src={service.imageUrl} alt="תמונה נוכחית" className="object-cover w-full h-full opacity-50" />
-                        <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white uppercase drop-shadow-md">מונה נוכחית</span>
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white uppercase drop-shadow-md">תמונה נוכחית</span>
                       </div>
                     )}
                   </Card>
