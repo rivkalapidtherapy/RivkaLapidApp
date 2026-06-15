@@ -10,6 +10,24 @@ import { Button } from './components/UI';
 import { SERVICES as INITIAL_SERVICES, COLORS } from './constants';
 import { getAdminServices } from './services/bookingService';
 import { Service } from './types';
+import { Instagram, Facebook } from 'lucide-react';
+
+const WhatsAppIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+    <path d="M17 14c-.2-.1-1.2-.6-1.4-.7-.2-.1-.3-.1-.5.1-.2.2-.7.7-.8.9-.1.2-.3.2-.5.1A6.9 6.9 0 0 1 10 11.3c-.3-.6-.1-.9-.1-1.1.1-.1.2-.3.3-.4.1-.1.1-.2.2-.3.1-.1.1-.2.0-.4-.1-.2-.5-1.2-.7-1.7-.2-.5-.4-.4-.5-.4h-.5c-.2 0-.5.1-.7.3a2.7 2.7 0 0 0-.9 2c0 1.2.9 2.4 1 2.6.1.2 1.8 2.7 4.3 3.8.6.3 1.1.4 1.5.6.6.2 1.2.2 1.6.1.5-.1 1.2-.5 1.4-1 .2-.5.2-.9.1-1z" />
+  </svg>
+);
+
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>('home');
@@ -457,10 +475,34 @@ const App: React.FC = () => {
         <div className="max-w-4xl mx-auto space-y-12">
           <div className="text-2xl md:text-3xl serif italic text-[#2d2a26]/20 font-light">"הדרך אל האמת עוברת בלב שקט"</div>
           <div className="h-[1px] w-16 bg-[#2d2a26]/5 mx-auto"></div>
-          <div className="flex justify-center gap-16 text-[10px] uppercase tracking-[0.4em] text-[#2d2a26]/40 font-bold">
-            <a href="#" className="hover:text-[#7d7463] transition-colors">Instagram</a>
-            <a href="#" className="hover:text-[#7d7463] transition-colors">Facebook</a>
-            <a href="#" className="hover:text-[#7d7463] transition-colors">WhatsApp</a>
+          <div className="flex justify-center gap-8 text-[#2d2a26]/60">
+            <a
+              href="https://www.instagram.com/lapidrebecca/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#7d7463] hover:shadow-md transition-all duration-300 hover:-translate-y-1 p-3.5 bg-[#f5f2ed] hover:bg-[#7d7463]/10 rounded-full flex items-center justify-center"
+              aria-label="Instagram"
+            >
+              <Instagram size={22} strokeWidth={1.5} />
+            </a>
+            <a
+              href="https://www.facebook.com/rickey.cohen.9"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#7d7463] hover:shadow-md transition-all duration-300 hover:-translate-y-1 p-3.5 bg-[#f5f2ed] hover:bg-[#7d7463]/10 rounded-full flex items-center justify-center"
+              aria-label="Facebook"
+            >
+              <Facebook size={22} strokeWidth={1.5} />
+            </a>
+            <a
+              href="https://wa.me/972547394577"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#7d7463] hover:shadow-md transition-all duration-300 hover:-translate-y-1 p-3.5 bg-[#f5f2ed] hover:bg-[#7d7463]/10 rounded-full flex items-center justify-center"
+              aria-label="WhatsApp"
+            >
+              <WhatsAppIcon className="w-[22px] h-[22px]" strokeWidth={1.5} />
+            </a>
           </div>
           <p className="text-[9px] uppercase tracking-[0.5em] text-[#2d2a26]/20">
             &copy; {new Date().getFullYear()} רבקה לפיד - קליניקה לריפוי רגשי ונומרולוגיה
