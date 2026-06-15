@@ -504,7 +504,7 @@ const App: React.FC = () => {
               <WhatsAppIcon className="w-[22px] h-[22px]" strokeWidth={1.5} />
             </a>
           </div>
-          <p className="text-[9px] uppercase tracking-[0.5em] text-[#2d2a26]/20">
+          <p className="text-xs tracking-wide text-[#2d2a26]/50">
             &copy; {new Date().getFullYear()} רבקה לפיד - קליניקה לריפוי רגשי ונומרולוגיה
           </p>
         </div>
