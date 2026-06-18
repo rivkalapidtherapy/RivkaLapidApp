@@ -155,7 +155,7 @@ const App: React.FC = () => {
                 </div>
               </motion.div>
 
-              {/* Right Media Side (Promotional Video Placeholder) */}
+              {/* Right Media Side - DESKTOP (Promotional Video Placeholder) */}
               <motion.div
                 initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -163,20 +163,43 @@ const App: React.FC = () => {
                 className="hidden lg:flex flex-1 relative items-center justify-center bg-[#f5f2ed] border-r border-[#2d2a26]/5 px-12"
               >
                 <div className="relative w-full max-w-xl aspect-video rounded-sm overflow-hidden shadow-2xl group cursor-pointer bg-stone-900">
-                  {/* Atmospheric Background Image */}
                   <img
                     src="https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=800"
                     alt="סרטון תדמית רבקה לפיד"
                     className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-all duration-[2s]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                  
-                  {/* Play Button Overlay */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-white space-y-4">
                     <div className="w-16 h-16 bg-white/20 hover:bg-white/35 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 border border-white/40 scale-100 group-hover:scale-110 shadow-lg shadow-black/20">
                       <span className="text-2xl mr-1">▶</span>
                     </div>
                     <span className="text-xs uppercase tracking-[0.4em] font-bold opacity-80 group-hover:opacity-100 transition-opacity">סרטון תדמית - רבקה לפיד</span>
+                  </div>
+                </div>
+              </motion.div>
+            </section>
+
+            {/* MOBILE Promotional Video Section - visible only on small screens */}
+            <section className="lg:hidden bg-[#f5f2ed] pb-12 px-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+                className="max-w-lg mx-auto"
+              >
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-xl group cursor-pointer bg-stone-900">
+                  <img
+                    src="https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=800"
+                    alt="סרטון תדמית רבקה לפיד"
+                    className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-all duration-[2s]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white space-y-3">
+                    <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/40 shadow-lg shadow-black/20">
+                      <span className="text-xl mr-0.5">▶</span>
+                    </div>
+                    <span className="text-[10px] uppercase tracking-[0.3em] font-bold opacity-80">סרטון תדמית - רבקה לפיד</span>
                   </div>
                 </div>
               </motion.div>
@@ -295,27 +318,23 @@ const App: React.FC = () => {
                   </h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                   {services.map((service, index) => (
                     <motion.div
                       key={service.id}
                       initial={{ opacity: 0, y: 30 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
+                      viewport={{ once: true, amount: 0.15 }}
                       transition={{ delay: index * 0.1 }}
                       whileHover={{ y: -10 }}
-                      className="group relative h-[650px] overflow-hidden rounded-sm cursor-pointer bg-[#f5f2ed]"
+                      className="group relative h-[420px] md:h-[550px] lg:h-[650px] overflow-hidden rounded-xl md:rounded-sm cursor-pointer bg-[#f5f2ed]"
                       onClick={() => {
                         setSelectedServiceId(service.id);
                         setView('booking');
                       }}
                     >
                       {/* Background Image */}
-                      <motion.div
-                        initial={{ filter: "grayscale(100%)", opacity: 0.7 }}
-                        whileInView={{ filter: "grayscale(0%)", opacity: 1 }}
-                        viewport={{ amount: 0.9 }}
-                        transition={{ duration: 1.2 }}
+                      <div
                         className="absolute inset-0 transition-transform duration-[2s] group-hover:scale-110"
                       >
                         <img
@@ -325,19 +344,19 @@ const App: React.FC = () => {
                         />
                         {/* Darker Overlay for Readability */}
                         <div className="absolute inset-0 bg-gradient-to-t from-[#2d2a26] via-[#2d2a26]/60 to-transparent opacity-90"></div>
-                      </motion.div>
+                      </div>
 
                       {/* Content Overlay */}
-                      <div className="absolute inset-0 p-10 flex flex-col justify-end text-white text-right">
-                        <span className="text-xs uppercase tracking-[0.4em] mb-6 opacity-60">0{index + 1}.</span>
-                        <h3 className="text-3xl font-light mb-4 tracking-tight leading-tight">{service.type}</h3>
-                        <div className="text-5xl font-bold mb-8 text-[#7d7463] serif italic tracking-tighter">₪{service.price}</div>
+                      <div className="absolute inset-0 p-6 md:p-10 flex flex-col justify-end text-white text-right">
+                        <span className="text-xs uppercase tracking-[0.4em] mb-3 md:mb-6 opacity-60">0{index + 1}.</span>
+                        <h3 className="text-2xl md:text-3xl font-light mb-3 md:mb-4 tracking-tight leading-tight">{service.type}</h3>
+                        <div className="text-4xl md:text-5xl font-bold mb-4 md:mb-8 text-[#7d7463] serif italic tracking-tighter">₪{service.price}</div>
 
-                        <p className="text-white/95 text-base font-light leading-relaxed mb-10">
+                        <p className="text-white/95 text-sm md:text-base font-light leading-relaxed mb-6 md:mb-10 line-clamp-3 md:line-clamp-none">
                           {service.description}
                         </p>
 
-                        <div className="pt-8 border-t border-white/20 flex justify-between items-center">
+                        <div className="pt-4 md:pt-8 border-t border-white/20 flex justify-between items-center">
                           <span className="text-[10px] tracking-[0.3em] uppercase font-bold">תיאום עכשיו</span>
                           <motion.span
                             animate={{ x: [0, 5, 0] }}

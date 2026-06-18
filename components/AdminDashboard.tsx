@@ -425,12 +425,12 @@ const AdminDashboard: React.FC = () => {
           <p className="text-stone-400 mt-1">שליטה מלאה בקליניקה ובזמינות שלך.</p>
         </div>
 
-        <div className="flex flex-wrap bg-stone-100/50 p-1.5 rounded-xl border border-stone-200/50 gap-1">
+        <div className="flex overflow-x-auto md:flex-wrap bg-stone-100/50 p-1.5 rounded-xl border border-stone-200/50 gap-1 scrollbar-hide">
           {(['morning', 'appointments', 'calendar', 'clients', 'services', 'gallery', 'analytics', 'journal', 'settings', 'content_hub'] as AdminTab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 uppercase tracking-widest ${activeTab === tab
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 uppercase tracking-widest whitespace-nowrap ${activeTab === tab
                 ? 'bg-white text-stone-800 shadow-sm border border-stone-200'
                 : 'text-stone-500 hover:text-stone-800'
                 }`}
