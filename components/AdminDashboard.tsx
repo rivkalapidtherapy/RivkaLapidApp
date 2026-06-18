@@ -214,12 +214,17 @@ const AdminDashboard: React.FC = () => {
       if (res.success) {
         setNotification({ message: 'נתוני הדמו נטענו בהצלחה!', type: 'success' });
         fetchData();
+      } else if (res.error?.includes('401') || res.error?.includes('Unauthorized') || res.error?.includes('row-level security')) {
+        setNotification({
+          message: 'שגיאת הרשאות (RLS): יש להריץ קודם את fix-rls-policies.sql ב-Supabase SQL Editor, ואז לנסות שוב.',
+          type: 'error'
+        });
       } else {
         setNotification({ message: `שגיאה בטעינת נתונים: ${res.error}`, type: 'error' });
       }
     } catch (err) {
       console.error(err);
-      setNotification({ message: 'שגיאה בטעינת נתוני דמו', type: 'error' });
+      setNotification({ message: 'שגיאה בטעינת נתוני דמו — יתכן שצריך לתקן הרשאות RLS ב-Supabase', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -642,6 +647,26 @@ const AdminDashboard: React.FC = () => {
                       <RefreshCw className="w-5 h-5" />
                       טעינת נתוני דמו 🧪
                     </Button>
+                  </div>
+                </div>
+
+                <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl text-stone-700 text-sm space-y-3">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="space-y-2">
+                      <p className="font-bold text-amber-800">מקבלת שגיאת 401 (Unauthorized)?</p>
+                      <p>יש להריץ קודם את הסקריפט <code className="bg-amber-100 px-1.5 py-0.5 rounded font-mono text-xs">fix-rls-policies.sql</code> ב-Supabase SQL Editor כדי לתקן הרשאות כתיבה.</p>
+                      <p>לחלופין, ניתן להריץ גם את <code className="bg-amber-100 px-1.5 py-0.5 rounded font-mono text-xs">seed-demo-data.sql</code> ישירות ב-SQL Editor כדי לטעון נתוני דמו ישירות מול ה-DB.</p>
+                      <a
+                        href="https://supabase.com/dashboard/project/pijkslsvvloukswyaxht/sql/new"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-[#7d7463] font-bold hover:underline mt-1"
+                      >
+                        <Link className="w-4 h-4" />
+                        פתח את Supabase SQL Editor ←
+                      </a>
+                    </div>
                   </div>
                 </div>
               </Card>

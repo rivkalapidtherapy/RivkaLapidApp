@@ -681,10 +681,10 @@ export const loadDemoData = async (): Promise<{ success: boolean; error?: string
   if (!supabase) return { success: false, error: "Supabase client not initialized" };
 
   try {
-    // 1. Seed Content Hub Items if empty or just add
+    // 1. Seed Content Hub Items if empty
     const { data: existingHub } = await supabase.from('content_hub').select('id').limit(1);
     if (!existingHub || existingHub.length === 0) {
-      await supabase.from('content_hub').insert([
+      const { error: hubErr } = await supabase.from('content_hub').insert([
         {
           title: 'איך למצוא את הייעוד שלך דרך נומרולוגיה',
           type: 'article',
@@ -718,6 +718,10 @@ export const loadDemoData = async (): Promise<{ success: boolean; error?: string
           publication_date: new Date(Date.now() - 259200000).toISOString().split('T')[0]
         }
       ]);
+      if (hubErr) {
+        console.error("Content hub insert error:", hubErr);
+        return { success: false, error: `content_hub: ${hubErr.message} (${hubErr.code || '401'})` };
+      }
     }
 
     // 2. Fetch services to link to appointments
@@ -726,8 +730,7 @@ export const loadDemoData = async (): Promise<{ success: boolean; error?: string
     if (dbServices && dbServices.length > 0) {
       serviceId = dbServices[0].id;
     } else {
-      // If services are completely empty in the DB, create at least one to prevent foreign key errors
-      const { data: newS } = await supabase.from('services').insert([
+      const { data: newS, error: svcErr } = await supabase.from('services').insert([
         {
           type: 'מפגש נומרולוגי רגשי',
           duration: '60',
@@ -737,6 +740,10 @@ export const loadDemoData = async (): Promise<{ success: boolean; error?: string
           image_url: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=800'
         }
       ]).select().single();
+      if (svcErr) {
+        console.error("Service insert error:", svcErr);
+        return { success: false, error: `services: ${svcErr.message} (${svcErr.code || '401'})` };
+      }
       if (newS) serviceId = newS.id;
     }
 
@@ -748,7 +755,7 @@ export const loadDemoData = async (): Promise<{ success: boolean; error?: string
 
     const { data: existingApps } = await supabase.from('appointments').select('id').limit(1);
     if (!existingApps || existingApps.length === 0) {
-      await supabase.from('appointments').insert([
+      const { error: appErr } = await supabase.from('appointments').insert([
         {
           service_id: serviceId,
           client_name: 'מיכל ישראלי',
@@ -758,8 +765,7 @@ export const loadDemoData = async (): Promise<{ success: boolean; error?: string
           time: '10:00',
           status: 'confirmed',
           spiritual_insight: 'הלב שלך מוכן לשלב הבא של הריפוי וההתפתחות.',
-          session_notes: 'היה מפגש מעולה. דיברנו על שחרור חסמים ודפוסים שחוזרים על עצמם במשפחה.',
-          items: []
+          session_notes: 'היה מפגש מעולה. דיברנו על שחרור חסמים ודפוסים שחוזרים על עצמם במשפחה.'
         },
         {
           service_id: serviceId,
@@ -770,8 +776,7 @@ export const loadDemoData = async (): Promise<{ success: boolean; error?: string
           time: '12:00',
           status: 'pending',
           spiritual_insight: 'התשובות שאת מחפשת נמצאות בתוכך. המספרים שלך מעידים על כוח רב.',
-          session_notes: '',
-          items: []
+          session_notes: ''
         },
         {
           service_id: serviceId,
@@ -785,8 +790,7 @@ export const loadDemoData = async (): Promise<{ success: boolean; error?: string
           sumit_document_id: 'SUMIT-779218',
           sumit_pdf_url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
           spiritual_insight: 'השינוי מתחיל בצעד קטן של אמונה בעצמך.',
-          session_notes: 'שילמה בביט והופקה קבלה אוטומטית. דיברנו על החיבור לעולם הנומרולוגיה והמספרים במפה שלה.',
-          items: []
+          session_notes: 'שילמה בביט והופקה קבלה אוטומטית. דיברנו על החיבור לעולם הנומרולוגיה והמספרים במפה שלה.'
         },
         {
           service_id: serviceId,
@@ -797,16 +801,19 @@ export const loadDemoData = async (): Promise<{ success: boolean; error?: string
           time: '09:00',
           status: 'confirmed',
           spiritual_insight: 'השנה האישית שלך מייצגת התחלה של מחזור אנרגטי חדש ומעצים.',
-          session_notes: '',
-          items: []
+          session_notes: ''
         }
       ]);
+      if (appErr) {
+        console.error("Appointments insert error:", appErr);
+        return { success: false, error: `appointments: ${appErr.message} (${appErr.code || '400'})` };
+      }
     }
 
     // 4. Seed Journey Notes
     const { data: existingNotes } = await supabase.from('journey_notes').select('id').limit(1);
     if (!existingNotes || existingNotes.length === 0) {
-      await supabase.from('journey_notes').insert([
+      const { error: noteErr } = await supabase.from('journey_notes').insert([
         {
           client_phone: '0541234567',
           client_name: 'מיכל ישראלי',
@@ -818,6 +825,10 @@ export const loadDemoData = async (): Promise<{ success: boolean; error?: string
           content: 'התחלנו תהליך של נומרולוגיה רגשית. המטרה היא להבין את השנה האישית ולמנף את ההחלטות העסקיות שלה.'
         }
       ]);
+      if (noteErr) {
+        console.error("Journey notes insert error:", noteErr);
+        return { success: false, error: `journey_notes: ${noteErr.message} (${noteErr.code || '401'})` };
+      }
     }
 
     return { success: true };
