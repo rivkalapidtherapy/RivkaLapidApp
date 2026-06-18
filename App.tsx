@@ -68,10 +68,13 @@ const App: React.FC = () => {
 
     const urlParams = new URL(window.location.href);
     const portalPhoneParam = urlParams.searchParams.get('portal');
+    const viewParam = urlParams.searchParams.get('view');
     if (portalPhoneParam) {
       setPortalPhone(portalPhoneParam);
       setView('portal');
-      // Clean up URL without reload
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (viewParam === 'portal') {
+      setView('portal');
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 

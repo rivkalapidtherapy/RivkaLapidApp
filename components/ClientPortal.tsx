@@ -151,7 +151,7 @@ const ClientPortal: React.FC<ClientPortalProps> = ({ clientPhone, onClose }) => 
         await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin + '/'
+                redirectTo: window.location.origin + '/?view=portal'
             }
         });
     };
