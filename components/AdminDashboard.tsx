@@ -54,6 +54,26 @@ const AdminDashboard: React.FC = () => {
     publicationDate: new Date().toISOString().split('T')[0]
   });
 
+  // Modal states for Gallery and Service creation
+  const [isAddingGallery, setIsAddingGallery] = useState(false);
+  const [isUploadingGalleryImage, setIsUploadingGalleryImage] = useState(false);
+  const [newGallery, setNewGallery] = useState<{ title: string; category: string; url: string; file: File | null }>({
+    title: '',
+    category: 'כללי',
+    url: '',
+    file: null
+  });
+
+  const [isAddingServiceModal, setIsAddingServiceModal] = useState(false);
+  const [isUploadingServiceImage, setIsUploadingServiceImage] = useState(false);
+  const [newServiceData, setNewServiceData] = useState({
+    type: '',
+    price: 350,
+    duration: 60,
+    description: '',
+    imageUrl: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=800'
+  });
+
   useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => setNotification(null), 4000);
@@ -225,30 +245,107 @@ const AdminDashboard: React.FC = () => {
     updateDailyWorkingHours(newDaily);
   };
 
-  const addNewGalleryItem = async () => {
-    const url = prompt("הזן כתובת תמונה (URL):");
-    const title = prompt("הזן תיאור תמונה:");
-    if (url && title) {
-      await addGalleryItem({ url, title, category: 'General' });
+  const handleOpenAddGalleryModal = () => {
+    setNewGallery({
+      title: '',
+      category: 'כללי',
+      url: '',
+      file: null
+    });
+    setIsAddingGallery(true);
+  };
+
+  const handleCreateGalleryItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGallery.title || (!newGallery.url && !newGallery.file)) {
+      alert('נא להזין כותרת ולבחור או להזין תמונה');
+      return;
+    }
+    
+    setIsUploadingGalleryImage(true);
+    try {
+      let finalUrl = newGallery.url;
+      if (newGallery.file) {
+        const uploadedUrl = await uploadImage(newGallery.file);
+        if (uploadedUrl) {
+          finalUrl = uploadedUrl;
+        } else {
+          setNotification({ message: 'העלאת התמונה נכשלה', type: 'error' });
+          setIsUploadingGalleryImage(false);
+          return;
+        }
+      }
+      
+      await addGalleryItem({
+        url: finalUrl,
+        title: newGallery.title,
+        category: newGallery.category
+      });
+      
+      setNotification({ message: 'התמונה נוספה בהצלחה לגלריה!', type: 'success' });
+      setIsAddingGallery(false);
       fetchData();
+    } catch (err) {
+      console.error(err);
+      setNotification({ message: 'שגיאה בהוספת התמונה', type: 'error' });
+    } finally {
+      setIsUploadingGalleryImage(false);
     }
   };
 
-  const addNewService = async () => {
-    const type = prompt("שם השירות:");
-    const price = prompt("מחיר:");
-    const duration = prompt("משך (דקות):");
-    const description = prompt("תיאור:");
-    if (type && price && duration && description) {
+  const handleOpenAddServiceModal = () => {
+    setNewServiceData({
+      type: '',
+      price: 350,
+      duration: 60,
+      description: '',
+      imageUrl: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=800'
+    });
+    setIsAddingServiceModal(true);
+  };
+
+  const handleCreateService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newServiceData.type || !newServiceData.price || !newServiceData.duration || !newServiceData.description) {
+      alert('אנא מלאי את כל השדות החיוניים');
+      return;
+    }
+    setLoading(true);
+    try {
       await addService({
-        type: type as ServiceType,
-        price: parseInt(price),
-        duration: parseInt(duration),
-        description,
+        type: newServiceData.type as ServiceType,
+        price: newServiceData.price,
+        duration: newServiceData.duration,
+        description: newServiceData.description,
         isActive: true,
-        imageUrl: 'https://picsum.photos/seed/service/800/1200'
+        imageUrl: newServiceData.imageUrl
       });
+      setNotification({ message: 'השירות נוסף בהצלחה!', type: 'success' });
+      setIsAddingServiceModal(false);
       fetchData();
+    } catch (err) {
+      console.error(err);
+      setNotification({ message: 'שגיאה בהוספת השירות', type: 'error' });
+      setLoading(false);
+    }
+  };
+
+  const handleServiceImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    setIsUploadingServiceImage(true);
+    try {
+      const file = e.target.files[0];
+      const uploadedUrl = await uploadImage(file);
+      if (uploadedUrl) {
+        setNewServiceData(prev => ({ ...prev, imageUrl: uploadedUrl }));
+        setNotification({ message: 'תמונת השירות הועלתה בהצלחה', type: 'success' });
+      } else {
+        setNotification({ message: 'העלאת התמונה נכשלה', type: 'error' });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsUploadingServiceImage(false);
     }
   };
 
@@ -493,7 +590,7 @@ const AdminDashboard: React.FC = () => {
             <div className="space-y-8">
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-light text-stone-600">ניהול שירותים</h3>
-                <Button onClick={addNewService}>+ הוספת שירות</Button>
+                <Button onClick={handleOpenAddServiceModal}>+ הוספת שירות</Button>
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {services.map(service => (
@@ -551,7 +648,7 @@ const AdminDashboard: React.FC = () => {
             <div className="space-y-8">
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-light text-stone-600">ניהול ויזואלי</h3>
-                <Button onClick={addNewGalleryItem}>+ הוספת תמונה</Button>
+                <Button onClick={handleOpenAddGalleryModal}>+ הוספת תמונה</Button>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {gallery.map(item => (
@@ -817,6 +914,183 @@ const AdminDashboard: React.FC = () => {
         )}
       </AnimatePresence>
 
+        {/* Add Gallery Item Modal */}
+        <AnimatePresence>
+          {isAddingGallery && (
+            <div className="fixed inset-0 z-[100] bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-6 overflow-y-auto">
+              <Card className="max-w-md w-full my-auto !p-10 space-y-6">
+                <h3 className="text-2xl font-light text-stone-800 text-right">הוספת תמונה לגלריה</h3>
+                <form onSubmit={handleCreateGalleryItem} className="space-y-4 text-right">
+                  <Input 
+                    label="כותרת התמונה" 
+                    value={newGallery.title} 
+                    onChange={e => setNewGallery({ ...newGallery, title: e.target.value })} 
+                    required 
+                  />
+                  
+                  <Input 
+                    label="קטגוריה" 
+                    value={newGallery.category} 
+                    onChange={e => setNewGallery({ ...newGallery, category: e.target.value })} 
+                  />
+
+                  <div className="space-y-3">
+                    <span className="block text-xs font-bold text-[#2d2a26]/40 uppercase tracking-widest">מקור התמונה</span>
+                    <div className="flex gap-4 border-b border-stone-100 pb-2">
+                      <button
+                        type="button"
+                        className={`text-xs font-bold pb-2 px-1 transition-all ${!newGallery.file ? 'border-b-2 border-[#7d7463] text-[#7d7463]' : 'text-stone-400'}`}
+                        onClick={() => setNewGallery(prev => ({ ...prev, file: null }))}
+                      >
+                        כתובת אינטרנט (URL)
+                      </button>
+                      <button
+                        type="button"
+                        className={`text-xs font-bold pb-2 px-1 transition-all ${newGallery.file ? 'border-b-2 border-[#7d7463] text-[#7d7463]' : 'text-stone-400'}`}
+                        onClick={() => setNewGallery(prev => ({ ...prev, url: '' }))}
+                      >
+                        העלאה מהמחשב
+                      </button>
+                    </div>
+
+                    {!newGallery.file ? (
+                      <Input 
+                        label="קישור תמונה (URL)" 
+                        value={newGallery.url} 
+                        onChange={e => setNewGallery({ ...newGallery, url: e.target.value, file: null })} 
+                        placeholder="https://..."
+                      />
+                    ) : (
+                      <div className="space-y-2">
+                        <label className="flex items-center justify-center gap-2 px-4 py-3.5 border border-[#7d7463] text-[#7d7463] hover:bg-[#7d7463] hover:text-white rounded-lg text-xs font-bold transition-all duration-300 cursor-pointer shadow-sm text-center">
+                          <Upload className="w-4 h-4" />
+                          {newGallery.file ? newGallery.file.name : 'בחרי קובץ תמונה'}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={e => {
+                              if (e.target.files && e.target.files.length > 0) {
+                                setNewGallery(prev => ({ ...prev, file: e.target.files![0], url: '' }));
+                              }
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Image Preview */}
+                  {(newGallery.url || newGallery.file) && (
+                    <div className="mt-4 h-32 w-full rounded-md overflow-hidden bg-stone-50 border border-stone-100 flex items-center justify-center relative">
+                      <img 
+                        src={newGallery.file ? URL.createObjectURL(newGallery.file) : newGallery.url} 
+                        alt="תצוגה מקדימה" 
+                        className="object-cover w-full h-full opacity-80" 
+                      />
+                      <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white uppercase drop-shadow-md bg-black/10">תצוגה מקדימה</span>
+                    </div>
+                  )}
+
+                  {isUploadingGalleryImage ? (
+                    <div className="py-4 space-y-2 text-center">
+                      <div className="w-6 h-6 border-2 border-stone-200 border-t-[#7d7463] rounded-full animate-spin mx-auto"></div>
+                      <p className="text-[10px] text-stone-400">מעלה תמונה, אנא המתן...</p>
+                    </div>
+                  ) : (
+                    <div className="pt-6 flex gap-4 flex-row-reverse">
+                      <Button type="submit">שמור תמונה</Button>
+                      <Button variant="outline" onClick={() => setIsAddingGallery(false)}>ביטול</Button>
+                    </div>
+                  )}
+                </form>
+              </Card>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Add Service Modal */}
+        <AnimatePresence>
+          {isAddingServiceModal && (
+            <div className="fixed inset-0 z-[100] bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-6 overflow-y-auto">
+              <Card className="max-w-md w-full my-auto !p-10 space-y-6">
+                <h3 className="text-2xl font-light text-stone-800 text-right">הוספת שירות חדש</h3>
+                <form onSubmit={handleCreateService} className="space-y-4 text-right">
+                  <Input 
+                    label="שם השירות / סוג" 
+                    value={newServiceData.type} 
+                    onChange={e => setNewServiceData({ ...newServiceData, type: e.target.value })} 
+                    placeholder="לדוגמה: מפגש נומרולוגי רגשי"
+                    required 
+                  />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input 
+                      label="מחיר (₪)" 
+                      type="number"
+                      value={newServiceData.price} 
+                      onChange={e => setNewServiceData({ ...newServiceData, price: parseInt(e.target.value) || 0 })} 
+                      required 
+                    />
+                    <Input 
+                      label="משך המפגש (דקות)" 
+                      type="number"
+                      value={newServiceData.duration} 
+                      onChange={e => setNewServiceData({ ...newServiceData, duration: parseInt(e.target.value) || 0 })} 
+                      required 
+                    />
+                  </div>
+
+                  <div className="space-y-1 text-right">
+                    <label className="block text-xs font-bold text-stone-400 uppercase tracking-wider">תיאור השירות</label>
+                    <textarea 
+                      className="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#7d7463] text-right"
+                      rows={4}
+                      placeholder="תארי בקצרה את תכולת המפגש, למי הוא מתאים ומה התוצאה הצפויה..."
+                      value={newServiceData.description}
+                      onChange={e => setNewServiceData({ ...newServiceData, description: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest text-right">תמונת רקע של השירות</label>
+                    <div className="flex gap-2">
+                      <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-[#7d7463] text-[#7d7463] hover:bg-[#7d7463] hover:text-white rounded-lg text-xs font-bold transition-all duration-300 cursor-pointer shadow-sm text-center">
+                        <Upload className="w-4 h-4" />
+                        העלאת תמונה
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleServiceImageUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    {isUploadingServiceImage && (
+                      <div className="py-2 text-center">
+                        <div className="w-5 h-5 border-2 border-stone-200 border-t-[#7d7463] rounded-full animate-spin mx-auto"></div>
+                      </div>
+                    )}
+
+                    {newServiceData.imageUrl && (
+                      <div className="mt-2 h-24 w-full rounded-md overflow-hidden bg-stone-100 flex items-center justify-center relative">
+                        <img src={newServiceData.imageUrl} alt="תצוגה מקדימה" className="object-cover w-full h-full opacity-60" />
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white uppercase drop-shadow-md bg-black/10">תמונת רקע שנבחרה</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-6 flex gap-4 flex-row-reverse">
+                    <Button type="submit">צור שירות</Button>
+                    <Button variant="outline" onClick={() => setIsAddingServiceModal(false)}>ביטול</Button>
+                  </div>
+                </form>
+              </Card>
+            </div>
+          )}
+        </AnimatePresence>
 
       <AnimatePresence>
         {confirmAction && (
