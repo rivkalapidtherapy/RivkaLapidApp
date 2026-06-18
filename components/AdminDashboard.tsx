@@ -31,7 +31,11 @@ const AdminDashboard: React.FC = () => {
 
   const [editingApp, setEditingApp] = useState<Appointment | null>(null);
   const [selectedDay, setSelectedDay] = useState<number>(0);
-  const [confirmAction, setConfirmAction] = useState<{ type: 'cancel' | 'delete' | 'confirm', app: Appointment } | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{
+    type: 'cancel' | 'delete' | 'confirm' | 'delete_gallery';
+    app?: Appointment;
+    galleryItem?: GalleryItem;
+  } | null>(null);
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date>(new Date());
@@ -138,6 +142,18 @@ const AdminDashboard: React.FC = () => {
     setNotification({ message: 'המפגש נמחק לצמיתות מהיומן', type: 'success' });
     setConfirmAction(null);
     fetchData();
+  };
+
+  const handleDeleteGallery = async (id: string) => {
+    try {
+      await deleteGalleryItem(id);
+      setNotification({ message: 'התמונה נמחקה מהגלריה בהצלחה', type: 'success' });
+      setConfirmAction(null);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      setNotification({ message: 'שגיאה במחיקת התמונה', type: 'error' });
+    }
   };
 
   const handleUpdateApp = async (e: React.FormEvent) => {
@@ -656,7 +672,7 @@ const AdminDashboard: React.FC = () => {
                     <img src={item.url} alt={item.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
                       <p className="text-white text-[10px] font-bold uppercase mb-2">{item.title}</p>
-                      <button onClick={() => { if (confirm("למחוק תמונה?")) deleteGalleryItem(item.id).then(fetchData); }} className="text-red-400 text-xs hover:text-red-200 text-right">מחיקה</button>
+                      <button onClick={() => setConfirmAction({ type: 'delete_gallery', galleryItem: item })} className="text-red-400 text-xs hover:text-red-200 text-right">מחיקה</button>
                     </div>
                   </div>
                 ))}
@@ -1075,7 +1091,8 @@ const AdminDashboard: React.FC = () => {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="max-w-sm w-full bg-white rounded-3xl p-10 shadow-2xl text-center space-y-8"
             >
-              <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto ${confirmAction.type === 'delete' ? 'bg-red-50 text-red-500' :
+              <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto ${
+                confirmAction.type === 'delete' || confirmAction.type === 'delete_gallery' ? 'bg-red-50 text-red-500' :
                 confirmAction.type === 'confirm' ? 'bg-green-50 text-green-500' :
                   'bg-orange-50 text-orange-500'
                 }`}>
@@ -1084,28 +1101,32 @@ const AdminDashboard: React.FC = () => {
               <div className="space-y-3">
                 <h3 className="text-2xl font-medium text-stone-800">
                   {confirmAction.type === 'delete' ? 'מחיקת מפגש' :
+                    confirmAction.type === 'delete_gallery' ? 'מחיקת תמונה' :
                     confirmAction.type === 'confirm' ? 'אישור מפגש' :
                       'ביטול מפגש'}
                 </h3>
                 <p className="text-stone-500 text-sm leading-relaxed">
                   {confirmAction.type === 'delete'
-                    ? `האם את בטוחה שברצונך למחוק לצמיתות את המפגש של ${confirmAction.app.clientName}? פעולה זו אינה ניתנת לביטול.`
-                    : confirmAction.type === 'confirm'
-                      ? `האם לאשר את המפגש של ${confirmAction.app.clientName}? הודעת אישור תישלח אליה בוואטסאפ.`
-                      : `האם לבטל את המפגש של ${confirmAction.app.clientName}? הודעת ביטול תישלח אליה בוואטסאפ.`}
+                    ? `האם את בטוחה שברצונך למחוק לצמיתות את המפגש של ${confirmAction.app?.clientName}? פעולה זו אינה ניתנת לביטול.`
+                    : confirmAction.type === 'delete_gallery'
+                      ? `האם את בטוחה שברצונך למחוק לצמיתות את התמונה "${confirmAction.galleryItem?.title}" מהגלריה?`
+                      : confirmAction.type === 'confirm'
+                        ? `האם לאשר את המפגש של ${confirmAction.app?.clientName}? הודעת אישור תישלח אליה בוואטסאפ.`
+                        : `האם לבטל את המפגש של ${confirmAction.app?.clientName}? הודעת ביטול תישלח אליה בוואטסאפ.`}
                 </p>
               </div>
               <div className="flex flex-col gap-3">
                 <Button
-                  variant={confirmAction.type === 'delete' ? 'outline' : 'default'}
-                  className={confirmAction.type === 'delete' ? 'bg-red-600 hover:bg-red-700 text-white border-none' : ''}
+                  variant={confirmAction.type === 'delete' || confirmAction.type === 'delete_gallery' ? 'outline' : 'default'}
+                  className={confirmAction.type === 'delete' || confirmAction.type === 'delete_gallery' ? 'bg-red-600 hover:bg-red-700 text-white border-none' : ''}
                   onClick={() => {
-                    if (confirmAction.type === 'delete') handleDelete(confirmAction.app.id);
-                    else if (confirmAction.type === 'confirm') handleConfirm(confirmAction.app);
-                    else handleCancelAndNotify(confirmAction.app);
+                    if (confirmAction.type === 'delete') handleDelete(confirmAction.app!.id);
+                    else if (confirmAction.type === 'delete_gallery') handleDeleteGallery(confirmAction.galleryItem!.id);
+                    else if (confirmAction.type === 'confirm') handleConfirm(confirmAction.app!);
+                    else handleCancelAndNotify(confirmAction.app!);
                   }}
                 >
-                  {confirmAction.type === 'delete' ? 'כן, מחק לצמיתות' :
+                  {confirmAction.type === 'delete' || confirmAction.type === 'delete_gallery' ? 'כן, מחק לצמיתות' :
                     confirmAction.type === 'confirm' ? 'כן, אשר ושלח הודעה' :
                       'כן, בטל ושלח הודעה'}
                 </Button>
