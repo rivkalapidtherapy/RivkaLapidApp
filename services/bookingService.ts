@@ -357,29 +357,57 @@ export const getClinicStats = async (): Promise<ClinicStats> => {
 
 export const getAdminServices = async (): Promise<Service[]> => {
   if (supabase && !servicesLoaded) {
-    const { data, error } = await supabase.from('services').select('*');
-    if (!error && data && data.length > 0) {
-      dynamicServices = data.map(s => {
-        // Find matching initial service to retain the image URL since it's not in the DB yet
-        const matchingInitial = INITIAL_SERVICES.find(is => is.type === s.type);
-        return {
-          id: s.id,
-          type: s.type as ServiceType,
-          duration: parseInt(s.duration) || 60,
-          price: s.price,
-          description: s.description,
-          isActive: true,
-          category: s.category,
-          imageUrl: s.image_url || matchingInitial?.imageUrl
-        };
-      });
-      servicesLoaded = true;
-    } else if (!error && data && data.length === 0) {
-      // If DB is empty, seed it with initial services
-      for (const s of INITIAL_SERVICES) {
-        await addService(s);
+    try {
+      const { data, error } = await supabase.from('services').select('*');
+      if (error) {
+        console.error("Error loading services:", error);
+        servicesLoaded = true; // Mark as loaded to prevent infinite loop on failure
+      } else if (data && data.length > 0) {
+        dynamicServices = data.map(s => {
+          const matchingInitial = INITIAL_SERVICES.find(is => is.type === s.type);
+          return {
+            id: s.id,
+            type: s.type as ServiceType,
+            duration: parseInt(s.duration) || 60,
+            price: s.price,
+            description: s.description,
+            isActive: true,
+            category: s.category,
+            imageUrl: s.image_url || matchingInitial?.imageUrl
+          };
+        });
+        servicesLoaded = true;
+      } else if (data && data.length === 0) {
+        // If DB is empty, attempt to seed it once
+        servicesLoaded = true; // Mark as loaded first to prevent recursive loops if inserts fail
+        try {
+          for (const s of INITIAL_SERVICES) {
+            await addService(s);
+          }
+          // After attempting to seed, fetch again once
+          const { data: seededData } = await supabase.from('services').select('*');
+          if (seededData && seededData.length > 0) {
+            dynamicServices = seededData.map(s => {
+              const matchingInitial = INITIAL_SERVICES.find(is => is.type === s.type);
+              return {
+                id: s.id,
+                type: s.type as ServiceType,
+                duration: parseInt(s.duration) || 60,
+                price: s.price,
+                description: s.description,
+                isActive: true,
+                category: s.category,
+                imageUrl: s.image_url || matchingInitial?.imageUrl
+              };
+            });
+          }
+        } catch (seedErr) {
+          console.error("Failed to seed services in database:", seedErr);
+        }
       }
-      return getAdminServices(); // Recursive call to get the newly created services with real UUIDs
+    } catch (fetchErr) {
+      console.error("Failed to fetch services:", fetchErr);
+      servicesLoaded = true;
     }
   }
 
