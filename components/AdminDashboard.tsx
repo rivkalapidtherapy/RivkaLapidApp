@@ -8,7 +8,7 @@ import {
   updateService, updateAppointment, getDailyWorkingHours, updateDailyWorkingHours,
   getGallery, addGalleryItem, deleteGalleryItem, sendWhatsAppMessage, getConfirmationMessage, getCancellationMessage,
   addService, deleteService, confirmAppointment, getMessageTemplates, updateMessageTemplates, getReminderMessage, getPendingMessage,
-  uploadImage, getNumerologyInsights, updateNumerologyInsights, generateReceipt, getContentHubItems, addContentHubItem, deleteContentHubItem
+  uploadImage, getNumerologyInsights, updateNumerologyInsights, generateReceipt, getContentHubItems, addContentHubItem, deleteContentHubItem, loadDemoData
 } from '../services/bookingService';
 import { getWeeklyJournal } from '../services/geminiService';
 import { Card, Button, Input } from './UI';
@@ -203,6 +203,25 @@ const AdminDashboard: React.FC = () => {
     } catch (err) {
       console.error(err);
       setNotification({ message: 'שגיאה בשמירת סיכום המפגש', type: 'error' });
+    }
+  };
+
+  const handleLoadDemoData = async () => {
+    if (!confirm('האם את בטוחה שברצונך לטעון נתוני דמו? פעולה זו תוסיף תורים, פוסטים ורשומות דמו ל-Database.')) return;
+    setLoading(true);
+    try {
+      const res = await loadDemoData();
+      if (res.success) {
+        setNotification({ message: 'נתוני הדמו נטענו בהצלחה!', type: 'success' });
+        fetchData();
+      } else {
+        setNotification({ message: `שגיאה בטעינת נתונים: ${res.error}`, type: 'error' });
+      }
+    } catch (err) {
+      console.error(err);
+      setNotification({ message: 'שגיאה בטעינת נתוני דמו', type: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -599,6 +618,33 @@ const AdminDashboard: React.FC = () => {
                   }}
                 />
               )}
+
+              <Card className="max-w-4xl mx-auto space-y-8 !p-12 border border-[#7d7463]/25 bg-[#7d7463]/5">
+                <div className="border-b border-[#7d7463]/10 pb-6 text-center">
+                  <h3 className="text-3xl font-light mb-2 text-[#7d7463]">אזור פיתוח ונתוני דמו</h3>
+                  <p className="text-stone-500 text-sm italic">כלי עזר לניהול ובדיקת האתר עם נתוני דמו התחלתיים.</p>
+                </div>
+
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-white p-8 rounded-2xl border border-stone-200">
+                  <div className="space-y-2 text-right md:w-2/3">
+                    <h4 className="text-lg font-bold text-[#7d7463]">טעינת נתוני דמו ראשוניים</h4>
+                    <p className="text-stone-500 text-sm leading-relaxed">
+                      פעולה זו תעלה ל-Database סט של תורים (למיכל ישראלי, דנה לוי, רונית כהן ועוד), מאמרים ופודקאסטים במרכז התוכן, ורשימות מעקב טיפוליות. המטרה היא להדגים את האתר כשהוא מלא בתוכן ועבודה פעילה.
+                      <br />
+                      <strong className="text-amber-700">חשוב:</strong> הפעולה בודקת אם קיימים נתונים ולכן אינה דורסת או מוחקת את המידע הקיים שלך.
+                    </p>
+                  </div>
+                  <div className="md:w-1/3 flex justify-end w-full">
+                    <Button
+                      onClick={handleLoadDemoData}
+                      className="bg-[#7d7463] hover:bg-[#6c6354] text-white flex items-center gap-2 py-4 px-8 text-base shadow-lg transition-transform hover:scale-[1.02]"
+                    >
+                      <RefreshCw className="w-5 h-5" />
+                      טעינת נתוני דמו 🧪
+                    </Button>
+                  </div>
+                </div>
+              </Card>
             </div>
           )}
 

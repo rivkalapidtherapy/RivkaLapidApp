@@ -677,3 +677,153 @@ export const deleteContentHubItem = async (id: string): Promise<void> => {
   mockContentItems = mockContentItems.filter(item => item.id !== id);
 };
 
+export const loadDemoData = async (): Promise<{ success: boolean; error?: string }> => {
+  if (!supabase) return { success: false, error: "Supabase client not initialized" };
+
+  try {
+    // 1. Seed Content Hub Items if empty or just add
+    const { data: existingHub } = await supabase.from('content_hub').select('id').limit(1);
+    if (!existingHub || existingHub.length === 0) {
+      await supabase.from('content_hub').insert([
+        {
+          title: 'איך למצוא את הייעוד שלך דרך נומרולוגיה',
+          type: 'article',
+          description: 'במדריך זה נלמד כיצד מספר יום הלידה שלך משפיע על הבחירות המקצועיות והאישיות שלך, ואיך לקרוא את מפת החיים שלך בצורה מדויקת ומחברת.',
+          summary: '5 דקות קריאה • מאמר',
+          publication_date: new Date().toISOString().split('T')[0]
+        },
+        {
+          title: 'פודקאסט: להתחבר מחדש לילדה הפנימית',
+          type: 'podcast',
+          media_url: 'https://open.spotify.com/episode/7fK282r529wQdKx5Q24a35',
+          embed_code: '<iframe src="https://open.spotify.com/embed/episode/7fK282r529wQdKx5Q24a35" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>',
+          description: 'שיחה עמוקה ומרגשת על השילוב שבין טיפול רגשי לעבודה עם תת-המודע לשחרור דפוסים וחסמים ישנים שמנהלים אותנו.',
+          summary: 'פרק 5 • פודקאסט',
+          publication_date: new Date(Date.now() - 86400000).toISOString().split('T')[0]
+        },
+        {
+          title: 'מערכת יחסים בריאה מול תלות רגשית',
+          type: 'post',
+          description: 'פוסט הסבר מעמיק המפרט את ההבדלים הדקים שבין אהבה בריאה ומעצימה לבין תלות רגשית המעכבת את ההתפתחות האישית והזוגית שלך.',
+          summary: '3 דקות קריאה • פוסט',
+          publication_date: new Date(Date.now() - 172800000).toISOString().split('T')[0]
+        },
+        {
+          title: 'מדיטציה מונחית לשחרור לחצים ואיזון צ׳אקרות',
+          type: 'video',
+          media_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+          embed_code: '<iframe width="100%" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>',
+          description: 'תרגול יומי קצר של 10 דקות להרגעה, חיבור לגוף ומציאת שקט פנימי בתוך שגרת היומיום העמוסה.',
+          summary: '10 דקות תרגול • וידאו',
+          publication_date: new Date(Date.now() - 259200000).toISOString().split('T')[0]
+        }
+      ]);
+    }
+
+    // 2. Fetch services to link to appointments
+    const { data: dbServices } = await supabase.from('services').select('id');
+    let serviceId = '1';
+    if (dbServices && dbServices.length > 0) {
+      serviceId = dbServices[0].id;
+    } else {
+      // If services are completely empty in the DB, create at least one to prevent foreign key errors
+      const { data: newS } = await supabase.from('services').insert([
+        {
+          type: 'מפגש נומרולוגי רגשי',
+          duration: '60',
+          price: 350,
+          description: 'מפגש אבחון וטיפול רגשי המשלב קריאת מפה נומרולוגית ועבודה תת-מודע.',
+          category: 'general',
+          image_url: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=800'
+        }
+      ]).select().single();
+      if (newS) serviceId = newS.id;
+    }
+
+    // 3. Seed Appointments
+    const today = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const nextWeek = new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0];
+
+    const { data: existingApps } = await supabase.from('appointments').select('id').limit(1);
+    if (!existingApps || existingApps.length === 0) {
+      await supabase.from('appointments').insert([
+        {
+          service_id: serviceId,
+          client_name: 'מיכל ישראלי',
+          client_email: 'michal@example.com',
+          client_phone: '0541234567',
+          date: today,
+          time: '10:00',
+          status: 'confirmed',
+          spiritual_insight: 'הלב שלך מוכן לשלב הבא של הריפוי וההתפתחות.',
+          session_notes: 'היה מפגש מעולה. דיברנו על שחרור חסמים ודפוסים שחוזרים על עצמם במשפחה.',
+          items: []
+        },
+        {
+          service_id: serviceId,
+          client_name: 'דנה לוי',
+          client_email: 'dana@example.com',
+          client_phone: '0529876543',
+          date: tomorrow,
+          time: '12:00',
+          status: 'pending',
+          spiritual_insight: 'התשובות שאת מחפשת נמצאות בתוכך. המספרים שלך מעידים על כוח רב.',
+          session_notes: '',
+          items: []
+        },
+        {
+          service_id: serviceId,
+          client_name: 'רונית כהן',
+          client_email: 'ronit@example.com',
+          client_phone: '0501112223',
+          date: yesterday,
+          time: '16:00',
+          status: 'paid',
+          payment_method: 'Bit',
+          sumit_document_id: 'SUMIT-779218',
+          sumit_pdf_url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+          spiritual_insight: 'השינוי מתחיל בצעד קטן של אמונה בעצמך.',
+          session_notes: 'שילמה בביט והופקה קבלה אוטומטית. דיברנו על החיבור לעולם הנומרולוגיה והמספרים במפה שלה.',
+          items: []
+        },
+        {
+          service_id: serviceId,
+          client_name: 'שירה אלון',
+          client_email: 'shira@example.com',
+          client_phone: '0535556667',
+          date: nextWeek,
+          time: '09:00',
+          status: 'confirmed',
+          spiritual_insight: 'השנה האישית שלך מייצגת התחלה של מחזור אנרגטי חדש ומעצים.',
+          session_notes: '',
+          items: []
+        }
+      ]);
+    }
+
+    // 4. Seed Journey Notes
+    const { data: existingNotes } = await supabase.from('journey_notes').select('id').limit(1);
+    if (!existingNotes || existingNotes.length === 0) {
+      await supabase.from('journey_notes').insert([
+        {
+          client_phone: '0541234567',
+          client_name: 'מיכל ישראלי',
+          content: 'מטופלת מדווחת על שיפור משמעותי בתחושת הביטחון העצמי מאז המפגש הראשון. עובדים על שחרור חסמים רגשיים.'
+        },
+        {
+          client_phone: '0501112223',
+          client_name: 'רונית כהן',
+          content: 'התחלנו תהליך של נומרולוגיה רגשית. המטרה היא להבין את השנה האישית ולמנף את ההחלטות העסקיות שלה.'
+        }
+      ]);
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("Error loading demo data:", err);
+    return { success: false, error: err.message || "Unknown error" };
+  }
+};
+
