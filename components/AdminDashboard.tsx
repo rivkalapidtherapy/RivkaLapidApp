@@ -935,49 +935,23 @@ const AdminDashboard: React.FC = () => {
                   />
 
                   <div className="space-y-3">
-                    <span className="block text-xs font-bold text-[#2d2a26]/40 uppercase tracking-widest">מקור התמונה</span>
-                    <div className="flex gap-4 border-b border-stone-100 pb-2">
-                      <button
-                        type="button"
-                        className={`text-xs font-bold pb-2 px-1 transition-all ${!newGallery.file ? 'border-b-2 border-[#7d7463] text-[#7d7463]' : 'text-stone-400'}`}
-                        onClick={() => setNewGallery(prev => ({ ...prev, file: null }))}
-                      >
-                        כתובת אינטרנט (URL)
-                      </button>
-                      <button
-                        type="button"
-                        className={`text-xs font-bold pb-2 px-1 transition-all ${newGallery.file ? 'border-b-2 border-[#7d7463] text-[#7d7463]' : 'text-stone-400'}`}
-                        onClick={() => setNewGallery(prev => ({ ...prev, url: '' }))}
-                      >
-                        העלאה מהמחשב
-                      </button>
+                    <label className="block text-xs font-bold text-stone-400 uppercase tracking-widest text-right">תמונת גלריה</label>
+                    <div className="space-y-2">
+                      <label className="flex items-center justify-center gap-2 px-4 py-3.5 border border-[#7d7463] text-[#7d7463] hover:bg-[#7d7463] hover:text-white rounded-lg text-xs font-bold transition-all duration-300 cursor-pointer shadow-sm text-center">
+                        <Upload className="w-4 h-4" />
+                        {newGallery.file ? newGallery.file.name : 'בחרי קובץ מהמחשב'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={e => {
+                            if (e.target.files && e.target.files.length > 0) {
+                              setNewGallery(prev => ({ ...prev, file: e.target.files![0], url: '' }));
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
                     </div>
-
-                    {!newGallery.file ? (
-                      <Input 
-                        label="קישור תמונה (URL)" 
-                        value={newGallery.url} 
-                        onChange={e => setNewGallery({ ...newGallery, url: e.target.value, file: null })} 
-                        placeholder="https://..."
-                      />
-                    ) : (
-                      <div className="space-y-2">
-                        <label className="flex items-center justify-center gap-2 px-4 py-3.5 border border-[#7d7463] text-[#7d7463] hover:bg-[#7d7463] hover:text-white rounded-lg text-xs font-bold transition-all duration-300 cursor-pointer shadow-sm text-center">
-                          <Upload className="w-4 h-4" />
-                          {newGallery.file ? newGallery.file.name : 'בחרי קובץ תמונה'}
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={e => {
-                              if (e.target.files && e.target.files.length > 0) {
-                                setNewGallery(prev => ({ ...prev, file: e.target.files![0], url: '' }));
-                              }
-                            }}
-                            className="hidden"
-                          />
-                        </label>
-                      </div>
-                    )}
                   </div>
 
                   {/* Image Preview */}
