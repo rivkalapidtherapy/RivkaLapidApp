@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MessageCircle, Edit2, XCircle, Trash2, CheckCircle2, Clock, Calendar as CalendarIcon, User, AlertTriangle, CheckCircle, ChevronLeft, ChevronRight, Check, Mail, RefreshCw, FileText, PlusCircle, Link, FileCheck } from 'lucide-react';
+import { Search, MessageCircle, Edit2, XCircle, Trash2, CheckCircle2, Clock, Calendar as CalendarIcon, User, AlertTriangle, CheckCircle, ChevronLeft, ChevronRight, Check, Mail, RefreshCw, FileText, PlusCircle, Link, FileCheck, Upload } from 'lucide-react';
 import { Appointment, ClinicStats, Service, AdminTab, GalleryItem, DailyHours, ServiceType, MessageTemplates, NumerologyInsights, ContentItem, BookingItem } from '../types';
 import {
   getAppointments, cancelAppointment, deleteAppointment, getClinicStats, getAdminServices,
@@ -522,13 +522,17 @@ const AdminDashboard: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-end gap-4 mt-2">
                       <div className="flex-1">
-                        <label className="block text-[10px] text-stone-400 font-bold mb-1 uppercase tracking-widest text-right">העלאת תמונת רקע חדשה</label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleImageUpload(e, service)}
-                          className="w-full bg-stone-50 border-b border-stone-200 py-1 outline-none text-left text-xs"
-                        />
+                        <label className="block text-[10px] text-stone-400 font-bold mb-2 uppercase tracking-widest text-right">תמונת רקע שירות</label>
+                        <label className="flex items-center justify-center gap-2 px-4 py-3 border border-[#7d7463] text-[#7d7463] hover:bg-[#7d7463] hover:text-white rounded-lg text-xs font-bold transition-all duration-300 cursor-pointer shadow-sm text-center">
+                          <Upload className="w-4 h-4" />
+                          העלאת תמונה
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(e, service)}
+                            className="hidden"
+                          />
+                        </label>
                       </div>
                     </div>
                     {service.imageUrl && (
