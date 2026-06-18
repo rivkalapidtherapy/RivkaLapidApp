@@ -69,12 +69,15 @@ const App: React.FC = () => {
     const urlParams = new URL(window.location.href);
     const portalPhoneParam = urlParams.searchParams.get('portal');
     const viewParam = urlParams.searchParams.get('view');
+    const oauthRedirectView = sessionStorage.getItem('oauth_redirect_view');
+
     if (portalPhoneParam) {
       setPortalPhone(portalPhoneParam);
       setView('portal');
       window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (viewParam === 'portal') {
+    } else if (viewParam === 'portal' || oauthRedirectView === 'portal') {
       setView('portal');
+      sessionStorage.removeItem('oauth_redirect_view');
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 
