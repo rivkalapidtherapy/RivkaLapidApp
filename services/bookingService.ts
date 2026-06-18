@@ -360,8 +360,8 @@ export const getAdminServices = async (): Promise<Service[]> => {
     try {
       const { data, error } = await supabase.from('services').select('*');
       if (error) {
-        console.error("Error loading services:", error);
-        servicesLoaded = true; // Mark as loaded to prevent infinite loop on failure
+        console.error("Error loading services from Supabase:", error);
+        servicesLoaded = true; // Mark as loaded to prevent loops on error
       } else if (data && data.length > 0) {
         dynamicServices = data.map(s => {
           const matchingInitial = INITIAL_SERVICES.find(is => is.type === s.type);
@@ -377,33 +377,9 @@ export const getAdminServices = async (): Promise<Service[]> => {
           };
         });
         servicesLoaded = true;
-      } else if (data && data.length === 0) {
-        // If DB is empty, attempt to seed it once
-        servicesLoaded = true; // Mark as loaded first to prevent recursive loops if inserts fail
-        try {
-          for (const s of INITIAL_SERVICES) {
-            await addService(s);
-          }
-          // After attempting to seed, fetch again once
-          const { data: seededData } = await supabase.from('services').select('*');
-          if (seededData && seededData.length > 0) {
-            dynamicServices = seededData.map(s => {
-              const matchingInitial = INITIAL_SERVICES.find(is => is.type === s.type);
-              return {
-                id: s.id,
-                type: s.type as ServiceType,
-                duration: parseInt(s.duration) || 60,
-                price: s.price,
-                description: s.description,
-                isActive: true,
-                category: s.category,
-                imageUrl: s.image_url || matchingInitial?.imageUrl
-              };
-            });
-          }
-        } catch (seedErr) {
-          console.error("Failed to seed services in database:", seedErr);
-        }
+      } else {
+        // Table is empty or no services returned, resolve with local defaults
+        servicesLoaded = true;
       }
     } catch (fetchErr) {
       console.error("Failed to fetch services:", fetchErr);
@@ -432,7 +408,7 @@ export const updateService = async (updated: Service): Promise<void> => {
 
 export const addService = async (service: Omit<Service, 'id'>): Promise<void> => {
   if (supabase) {
-    await supabase.from('services').insert([{
+    const { error } = await supabase.from('services').insert([{
       type: service.type,
       duration: service.duration.toString(),
       price: service.price,
@@ -440,7 +416,12 @@ export const addService = async (service: Omit<Service, 'id'>): Promise<void> =>
       category: (service as any).category || 'general',
       image_url: service.imageUrl
     }]);
-    servicesLoaded = false; // Refresh on next fetch
+    if (!error) {
+      servicesLoaded = false; // Refresh cache on next fetch only if successful
+    } else {
+      console.error("Error inserting service to Supabase:", error);
+      throw error;
+    }
   } else {
     dynamicServices.push({ ...service, id: Date.now().toString() });
   }
