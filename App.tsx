@@ -474,7 +474,6 @@ const App: React.FC = () => {
         return <ContentHub />;
 
       case 'portal':
-        if (!portalPhone) return null;
         return <ClientPortal clientPhone={portalPhone} onClose={() => setView('home')} />;
     }
   };
