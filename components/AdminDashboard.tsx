@@ -1,14 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MessageCircle, Edit2, XCircle, Trash2, CheckCircle2, Clock, Calendar as CalendarIcon, User, AlertTriangle, CheckCircle, ChevronLeft, ChevronRight, Check, Mail, RefreshCw } from 'lucide-react';
-import { Appointment, ClinicStats, Service, AdminTab, GalleryItem, DailyHours, ServiceType, MessageTemplates, NumerologyInsights } from '../types';
+import { Search, MessageCircle, Edit2, XCircle, Trash2, CheckCircle2, Clock, Calendar as CalendarIcon, User, AlertTriangle, CheckCircle, ChevronLeft, ChevronRight, Check, Mail, RefreshCw, FileText, PlusCircle, Link, FileCheck } from 'lucide-react';
+import { Appointment, ClinicStats, Service, AdminTab, GalleryItem, DailyHours, ServiceType, MessageTemplates, NumerologyInsights, ContentItem, BookingItem } from '../types';
 import {
   getAppointments, cancelAppointment, deleteAppointment, getClinicStats, getAdminServices,
   updateService, updateAppointment, getDailyWorkingHours, updateDailyWorkingHours,
   getGallery, addGalleryItem, deleteGalleryItem, sendWhatsAppMessage, getConfirmationMessage, getCancellationMessage,
   addService, deleteService, confirmAppointment, getMessageTemplates, updateMessageTemplates, getReminderMessage, getPendingMessage,
-  uploadImage, getNumerologyInsights, updateNumerologyInsights
+  uploadImage, getNumerologyInsights, updateNumerologyInsights, generateReceipt, getContentHubItems, addContentHubItem, deleteContentHubItem
 } from '../services/bookingService';
 import { getWeeklyJournal } from '../services/geminiService';
 import { Card, Button, Input } from './UI';
@@ -39,6 +39,21 @@ const AdminDashboard: React.FC = () => {
   const [templates, setTemplates] = useState<MessageTemplates | null>(null);
   const [numerologyInsights, setNumerologyInsights] = useState<NumerologyInsights | null>(null);
 
+  // Invoicing & Content Hub CMS states
+  const [selectedAppForPayment, setSelectedAppForPayment] = useState<Appointment | null>(null);
+  const [isIssuingReceipt, setIsIssuingReceipt] = useState(false);
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
+  const [isAddingContent, setIsAddingContent] = useState(false);
+  const [newContent, setNewContent] = useState<Omit<ContentItem, 'id' | 'createdAt'>>({
+    title: '',
+    type: 'post',
+    mediaUrl: '',
+    embedCode: '',
+    description: '',
+    summary: '',
+    publicationDate: new Date().toISOString().split('T')[0]
+  });
+
   useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => setNotification(null), 4000);
@@ -52,14 +67,15 @@ const AdminDashboard: React.FC = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [apps, st, svcs, hours, gal, tmpls, numInsights] = await Promise.all([
+    const [apps, st, svcs, hours, gal, tmpls, numInsights, hubItems] = await Promise.all([
       getAppointments(),
       getClinicStats(),
       getAdminServices(),
       getDailyWorkingHours(),
       getGallery(),
       getMessageTemplates(),
-      getNumerologyInsights()
+      getNumerologyInsights(),
+      getContentHubItems()
     ]);
     setAppointments(apps.sort((a, b) => b.date.localeCompare(a.date)));
     setStats(st);
@@ -68,6 +84,7 @@ const AdminDashboard: React.FC = () => {
     setGallery(gal);
     setTemplates(tmpls);
     setNumerologyInsights(numInsights);
+    setContentItems(hubItems);
 
     if (activeTab === 'journal') {
       const summary = await getWeeklyJournal(apps, svcs);
@@ -76,6 +93,7 @@ const AdminDashboard: React.FC = () => {
 
     setLoading(false);
   };
+
 
   const handleConfirm = async (app: Appointment) => {
     await confirmAppointment(app.id);
@@ -107,8 +125,93 @@ const AdminDashboard: React.FC = () => {
     if (!editingApp) return;
     await updateAppointment(editingApp.id, editingApp);
     setEditingApp(null);
+    setNotification({ message: 'פרטי המפגש עודכנו בהצלחה', type: 'success' });
     fetchData();
   };
+
+  const handleConfirmPayment = async (appointmentId: string, method: string) => {
+    setIsIssuingReceipt(true);
+    try {
+      const res = await generateReceipt(appointmentId, method);
+      if (res.success) {
+        setNotification({ message: `הקבלה הופקה בהצלחה! מספר מסמך: ${res.documentId}`, type: 'success' });
+      } else {
+        setNotification({ message: `שגיאה בהנפקת קבלה: ${res.error || 'שגיאה לא ידועה'}`, type: 'error' });
+      }
+      setSelectedAppForPayment(null);
+      fetchData();
+    } catch (err: any) {
+      console.error(err);
+      setNotification({ message: 'שגיאה בתקשורת עם השרת', type: 'error' });
+    } finally {
+      setIsIssuingReceipt(false);
+    }
+  };
+
+  const handleMarkAttended = async (id: string) => {
+    try {
+      await updateAppointment(id, { status: 'attended' });
+      setNotification({ message: 'המפגש עודכן כבוצע בהצלחה!', type: 'success' });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      setNotification({ message: 'שגיאה בעדכון המפגש', type: 'error' });
+    }
+  };
+
+  const handleSaveNotes = async (id: string, notes: string) => {
+    try {
+      await updateAppointment(id, { sessionNotes: notes });
+      setNotification({ message: 'סיכום המפגש נשמר בהצלחה', type: 'success' });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      setNotification({ message: 'שגיאה בשמירת סיכום המפגש', type: 'error' });
+    }
+  };
+
+  const handleAddContentItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newContent.title || !newContent.type) {
+      alert('נא להזין כותרת וסוג תוכן');
+      return;
+    }
+    setLoading(true);
+    try {
+      await addContentHubItem(newContent);
+      setNotification({ message: 'התוכן נוסף בהצלחה למרכז המידע', type: 'success' });
+      setIsAddingContent(false);
+      setNewContent({
+        title: '',
+        type: 'post',
+        mediaUrl: '',
+        embedCode: '',
+        description: '',
+        summary: '',
+        publicationDate: new Date().toISOString().split('T')[0]
+      });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      setNotification({ message: 'שגיאה בהוספת התוכן', type: 'error' });
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteContentItem = async (id: string) => {
+    if (!confirm('האם את בטוחה שברצונך למחוק תוכן זה?')) return;
+    setLoading(true);
+    try {
+      await deleteContentHubItem(id);
+      setNotification({ message: 'התוכן נמחק בהצלחה', type: 'success' });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      setNotification({ message: 'שגיאה במחיקת התוכן', type: 'error' });
+      setLoading(false);
+    }
+  };
+
 
   const toggleHourForDay = (day: number, hour: string) => {
     if (!dailyHours) return;
@@ -186,7 +289,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap bg-stone-100/50 p-1.5 rounded-xl border border-stone-200/50 gap-1">
-          {(['morning', 'appointments', 'calendar', 'clients', 'services', 'gallery', 'analytics', 'journal', 'settings'] as AdminTab[]).map((tab) => (
+          {(['morning', 'appointments', 'calendar', 'clients', 'services', 'gallery', 'analytics', 'journal', 'settings', 'content_hub'] as AdminTab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -204,9 +307,11 @@ const AdminDashboard: React.FC = () => {
               {tab === 'analytics' && 'תובנות'}
               {tab === 'journal' && 'סיכום'}
               {tab === 'settings' && 'הגדרות'}
+              {tab === 'content_hub' && 'ניהול תוכן'}
             </button>
           ))}
         </div>
+
       </div>
 
       {loading ? (
@@ -259,6 +364,9 @@ const AdminDashboard: React.FC = () => {
                       onCancel={(app) => setConfirmAction({ type: 'cancel', app })}
                       onDelete={(id) => setConfirmAction({ type: 'delete', app: appointments.find(a => a.id === id)! })}
                       onConfirm={(app) => setConfirmAction({ type: 'confirm', app })}
+                      onConfirmPayment={setSelectedAppForPayment}
+                      onMarkAttended={handleMarkAttended}
+                      onSaveNotes={handleSaveNotes}
                     />
                   ))}
                   {calendarFilterDate && appointments.filter(a => a.date === calendarFilterDate).length === 0 && (
@@ -298,6 +406,9 @@ const AdminDashboard: React.FC = () => {
                     onCancel={(app) => setConfirmAction({ type: 'cancel', app })}
                     onDelete={(id) => setConfirmAction({ type: 'delete', app: appointments.find(a => a.id === id)! })}
                     onConfirm={(app) => setConfirmAction({ type: 'confirm', app })}
+                    onConfirmPayment={setSelectedAppForPayment}
+                    onMarkAttended={handleMarkAttended}
+                    onSaveNotes={handleSaveNotes}
                   />
                 )) : (
                   <div className="text-center py-20 bg-white rounded-xl border border-dashed border-stone-200 text-stone-400 italic">לא נמצאו תורים תואמים.</div>
@@ -478,7 +589,141 @@ const AdminDashboard: React.FC = () => {
               </Card>
             </div>
           )}
+
+          {activeTab === 'content_hub' && (
+            <div className="space-y-8">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-light text-stone-600">ניהול מרכז תוכן (CMS)</h3>
+                <Button onClick={() => setIsAddingContent(!isAddingContent)}>
+                  {isAddingContent ? 'סגור טופס' : '+ הוספת תוכן השראה'}
+                </Button>
+              </div>
+
+              {isAddingContent && (
+                <Card className="max-w-2xl mx-auto p-8 border-stone-100/60 shadow-lg">
+                  <form onSubmit={handleAddContentItem} className="space-y-6">
+                    <h4 className="text-lg font-medium text-stone-800 border-b pb-2">תוכן השראה חדש</h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Input 
+                        label="כותרת התוכן" 
+                        value={newContent.title} 
+                        onChange={e => setNewContent({ ...newContent, title: e.target.value })} 
+                        required 
+                      />
+                      
+                      <div className="space-y-1 text-right">
+                        <label className="block text-xs font-bold text-stone-400 uppercase tracking-wider">סוג תוכן</label>
+                        <select 
+                          className="w-full bg-stone-50 border border-stone-200 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#7d7463] text-right"
+                          value={newContent.type}
+                          onChange={e => setNewContent({ ...newContent, type: e.target.value as any })}
+                        >
+                          <option value="post">פוסט</option>
+                          <option value="podcast">פודקאסט</option>
+                          <option value="video">סרטון השראה</option>
+                          <option value="article">מאמר</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1 text-right">
+                      <label className="block text-xs font-bold text-stone-400 uppercase tracking-wider">תיאור / תוכן מקוצר</label>
+                      <textarea 
+                        className="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#7d7463] text-right"
+                        rows={4}
+                        placeholder="רשמי כאן את תוכן הפוסט או תיאור קצר של הפודקאסט/סרטון..."
+                        value={newContent.description}
+                        onChange={e => setNewContent({ ...newContent, description: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Input 
+                        label="זמן קריאה / סיכום (למשל: 3 דקות קריאה / פרק 5)" 
+                        value={newContent.summary} 
+                        onChange={e => setNewContent({ ...newContent, summary: e.target.value })} 
+                      />
+                      <Input 
+                        label="תאריך פרסום" 
+                        type="date"
+                        value={newContent.publicationDate} 
+                        onChange={e => setNewContent({ ...newContent, publicationDate: e.target.value })} 
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <Input 
+                        label="קישור למקור (Spotify, YouTube, Instagram וכו')" 
+                        value={newContent.mediaUrl} 
+                        onChange={e => setNewContent({ ...newContent, mediaUrl: e.target.value })} 
+                        placeholder="https://..."
+                      />
+                      
+                      <div className="space-y-1 text-right">
+                        <label className="block text-xs font-bold text-stone-400 uppercase tracking-wider">קוד הטמעה (Embed Code - אופציונלי)</label>
+                        <textarea 
+                          className="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-xs focus:outline-none focus:ring-1 focus:ring-[#7d7463] text-left ltr"
+                          rows={3}
+                          dir="ltr"
+                          placeholder="<iframe ...></iframe>"
+                          value={newContent.embedCode}
+                          onChange={e => setNewContent({ ...newContent, embedCode: e.target.value })}
+                        />
+                        <span className="text-[10px] text-stone-400">ניתן להטמיע נגני Spotify או YouTube לנגישות מהירה באתר.</span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-4 border-t">
+                      <Button type="submit">פרסם באתר</Button>
+                      <Button variant="outline" type="button" onClick={() => setIsAddingContent(false)}>ביטול</Button>
+                    </div>
+                  </form>
+                </Card>
+              )}
+
+              {/* Items List */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {contentItems.map(item => (
+                  <Card key={item.id} className="relative p-6 flex flex-col justify-between border-stone-100 hover:shadow-md group transition-all duration-300">
+                    <button 
+                      onClick={() => handleDeleteContentItem(item.id)}
+                      className="absolute top-4 left-4 text-red-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                      title="מחק תוכן"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                        <span>
+                          {item.type === 'post' && '📝 פוסט'}
+                          {item.type === 'podcast' && '🎙️ פודקאסט'}
+                          {item.type === 'video' && '🎥 סרטון'}
+                          {item.type === 'article' && '📰 מאמר'}
+                        </span>
+                        <span>{new Date(item.publicationDate).toLocaleDateString('he-IL')}</span>
+                      </div>
+                      
+                      <h4 className="text-xl font-medium text-stone-800 leading-tight">{item.title}</h4>
+                      <p className="text-stone-500 text-xs line-clamp-3 leading-relaxed">{item.description}</p>
+                    </div>
+
+                    <div className="pt-4 border-t border-stone-50 mt-6 flex justify-between items-center text-[10px] text-stone-400">
+                      <span>{item.summary || 'ללא כותרת משנה'}</span>
+                      {item.mediaUrl && (
+                        <a href={item.mediaUrl} target="_blank" rel="noopener noreferrer" className="text-[#7d7463] font-bold hover:underline flex items-center gap-1">
+                          מעבר לקישור <Link className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
+
       )}
 
       {/* Modals & Notifications moved to end to avoid transform issues */}
@@ -494,6 +739,16 @@ const AdminDashboard: React.FC = () => {
                   <Input label="תאריך" type="date" value={editingApp.date} onChange={e => setEditingApp({ ...editingApp, date: e.target.value })} />
                   <Input label="שעה" value={editingApp.time} onChange={e => setEditingApp({ ...editingApp, time: e.target.value })} />
                 </div>
+                <div className="space-y-1 text-right">
+                  <label className="block text-xs font-bold text-stone-400">סיכום טיפול ומעקב</label>
+                  <textarea
+                    className="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#7d7463] text-right"
+                    rows={4}
+                    value={editingApp.sessionNotes || ''}
+                    onChange={e => setEditingApp({ ...editingApp, sessionNotes: e.target.value })}
+                    placeholder="..."
+                  />
+                </div>
                 <div className="pt-6 flex gap-4 flex-row-reverse">
                   <Button type="submit">שמור שינויים</Button>
                   <Button variant="outline" onClick={() => setEditingApp(null)}>ביטול</Button>
@@ -503,6 +758,61 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Payment Selection Modal */}
+      <AnimatePresence>
+        {selectedAppForPayment && (
+          <div className="fixed inset-0 z-[100] bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-6">
+            <Card className="max-w-md w-full my-auto !p-10 space-y-6 text-center">
+              <div className="w-16 h-16 bg-[#7d7463]/10 rounded-full flex items-center justify-center mx-auto text-2xl text-[#7d7463]">
+                💳
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-light text-stone-800">קבלת תשלום והנפקת קבלה</h3>
+                <p className="text-stone-500 text-sm">
+                  בחר את אמצעי התשלום עבור המפגש של <strong>{selectedAppForPayment.clientName}</strong>.
+                  באישור, תופק קבלה אוטומטית ב-SUMIT (עוסק פטור) ותישלח במייל למטופלת.
+                </p>
+              </div>
+
+              {isIssuingReceipt ? (
+                <div className="py-6 space-y-3">
+                  <div className="w-8 h-8 border-2 border-stone-200 border-t-[#7d7463] rounded-full animate-spin mx-auto"></div>
+                  <p className="text-xs text-stone-400">מנפיק קבלה ב-SUMIT, אנא המתן...</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-3">
+                  {['Bit', 'Paybox', 'Cash'].map(method => (
+                    <button
+                      key={method}
+                      onClick={() => handleConfirmPayment(selectedAppForPayment.id, method)}
+                      className="py-4 rounded-xl border border-stone-200 hover:border-[#7d7463] hover:bg-[#7d7463]/5 font-bold transition-all text-stone-700 flex flex-col items-center justify-center gap-1.5"
+                    >
+                      <span className="text-lg">
+                        {method === 'Bit' && '📱'}
+                        {method === 'Paybox' && '📦'}
+                        {method === 'Cash' && '💵'}
+                      </span>
+                      <span className="text-xs">
+                        {method === 'Bit' && 'Bit'}
+                        {method === 'Paybox' && 'Paybox'}
+                        {method === 'Cash' && 'מזומן'}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {!isIssuingReceipt && (
+                <Button variant="outline" className="w-full" onClick={() => setSelectedAppForPayment(null)}>
+                  ביטול
+                </Button>
+              )}
+            </Card>
+          </div>
+        )}
+      </AnimatePresence>
+
 
       <AnimatePresence>
         {confirmAction && (
@@ -578,8 +888,13 @@ const AppointmentCard: React.FC<{
   onCancel: (app: Appointment) => void;
   onDelete: (id: string) => void;
   onConfirm: (app: Appointment) => void;
-}> = ({ app, services, onEdit, onCancel, onDelete, onConfirm }) => {
+  onConfirmPayment: (app: Appointment) => void;
+  onMarkAttended: (id: string) => void;
+  onSaveNotes: (id: string, notes: string) => void;
+}> = ({ app, services, onEdit, onCancel, onDelete, onConfirm, onConfirmPayment, onMarkAttended, onSaveNotes }) => {
   const service = services.find(s => s.id === app.serviceId);
+  const [showNotes, setShowNotes] = useState(false);
+  const [notesText, setNotesText] = useState(app.sessionNotes || '');
 
   const handleWhatsApp = () => {
     let message = '';
@@ -593,98 +908,194 @@ const AppointmentCard: React.FC<{
     sendWhatsAppMessage(app.clientPhone, message);
   };
 
+  const getBorderColor = () => {
+    switch (app.status) {
+      case 'confirmed': return 'bg-[#7d7463]';
+      case 'cancelled': return 'bg-red-400';
+      case 'attended': return 'bg-blue-400';
+      case 'paid': return 'bg-emerald-500';
+      case 'pending':
+      default:
+        return 'bg-amber-400';
+    }
+  };
+
   return (
     <Card className={`!p-0 overflow-hidden hover:shadow-lg transition-all duration-500 border-stone-100 ${app.status === 'cancelled' ? 'opacity-60 grayscale-[0.5]' : ''}`}>
-      <div className="flex flex-col md:flex-row items-stretch">
-        <div className={`w-2 h-auto ${app.status === 'confirmed' ? 'bg-[#7d7463]' : app.status === 'cancelled' ? 'bg-red-400' : 'bg-amber-400'}`}></div>
-        <div className="flex-1 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-5">
-            <div className="w-12 h-12 bg-stone-50 rounded-full flex items-center justify-center shadow-inner border border-stone-100 text-[#7d7463]">
-              <User className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-3">
-                <h3 className="text-lg font-medium text-stone-800">{app.clientName}</h3>
-                {app.status === 'cancelled' && (
-                  <span className="px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-red-100">מבוטל</span>
-                )}
-                {app.status === 'pending' && (
-                  <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[10px] font-bold uppercase tracking-widest rounded-full border border-amber-100">ממתין</span>
-                )}
-                {app.status === 'confirmed' && (
-                  <span className="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold uppercase tracking-widest rounded-full border border-green-100">מאושר</span>
+      <div className="flex flex-col">
+        <div className="flex flex-col md:flex-row items-stretch">
+          <div className={`w-full md:w-2 h-2 md:h-auto ${getBorderColor()}`}></div>
+          <div className="flex-1 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-5 w-full md:w-auto">
+              <div className="w-12 h-12 bg-stone-50 rounded-full flex items-center justify-center shadow-inner border border-stone-100 text-[#7d7463] shrink-0">
+                <User className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h3 className="text-lg font-medium text-stone-800">{app.clientName}</h3>
+                  {app.status === 'cancelled' && (
+                    <span className="px-2 py-0.5 bg-red-50 text-red-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-red-100">מבוטל</span>
+                  )}
+                  {app.status === 'pending' && (
+                    <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-[10px] font-bold uppercase tracking-widest rounded-full border border-amber-100">ממתין</span>
+                  )}
+                  {app.status === 'confirmed' && (
+                    <span className="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold uppercase tracking-widest rounded-full border border-green-100">מאושר</span>
+                  )}
+                  {app.status === 'attended' && (
+                    <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-widest rounded-full border border-blue-100">בוצע</span>
+                  )}
+                  {app.status === 'paid' && (
+                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-widest rounded-full border border-emerald-100">שולם 💳</span>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-400">
+                  <span className="flex items-center gap-1">
+                    <MessageCircle className="w-3 h-3" />
+                    {app.clientPhone}
+                  </span>
+                  {service && (
+                    <span className="font-medium text-stone-500">
+                      {service.type} (₪{service.price})
+                    </span>
+                  )}
+                </div>
+                {app.status === 'paid' && (
+                  <div className="flex items-center gap-3 pt-2 text-xs text-stone-500">
+                    <span>שולם ב-{app.paymentMethod === 'Cash' ? 'מזומן' : app.paymentMethod}</span>
+                    {app.sumitPdfUrl && (
+                      <a 
+                        href={app.sumitPdfUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="px-2.5 py-1 bg-white border border-stone-200 rounded text-[#7d7463] hover:bg-stone-50 font-bold transition-all flex items-center gap-1 text-[10px]"
+                      >
+                        הצג קבלה 📄
+                      </a>
+                    )}
+                  </div>
                 )}
               </div>
-              <p className="text-xs text-stone-400 flex items-center gap-1">
-                <MessageCircle className="w-3 h-3" />
-                {app.clientPhone}
-              </p>
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-center justify-end gap-10 text-sm">
-            <div className="text-right flex items-center gap-3">
-              <div className="flex flex-col items-end">
-                <p className="text-stone-400 text-[9px] uppercase font-bold tracking-widest">מועד</p>
-                <p className="font-medium flex items-center gap-2">
-                  <CalendarIcon className="w-3 h-3 text-stone-400" />
-                  {app.date}
-                  <Clock className="w-3 h-3 text-stone-400 mr-1" />
-                  {app.time}
-                </p>
+            <div className="flex flex-wrap items-center justify-between md:justify-end gap-6 md:gap-10 text-sm w-full md:w-auto">
+              <div className="text-right flex items-center gap-3">
+                <div className="flex flex-col items-end">
+                  <p className="text-stone-400 text-[9px] uppercase font-bold tracking-widest">מועד</p>
+                  <p className="font-medium flex items-center gap-2">
+                    <CalendarIcon className="w-3 h-3 text-stone-400" />
+                    {app.date}
+                    <Clock className="w-3 h-3 text-stone-400 mr-1" />
+                    {app.time}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="flex gap-3">
-              {app.status === 'pending' && (
+              
+              <div className="flex gap-2 flex-wrap justify-end animate-fade-in">
+                {/* Mark as completed */}
+                {app.status === 'confirmed' && (
+                  <button
+                    onClick={() => onMarkAttended(app.id)}
+                    title="סמן כמפגש שבוצע"
+                    className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center hover:bg-blue-100 transition-all duration-300 hover:scale-110"
+                  >
+                    <Check className="w-5 h-5" />
+                  </button>
+                )}
+
+                {/* Confirm Payment and generate receipt */}
+                {(app.status === 'confirmed' || app.status === 'attended') && (
+                  <button
+                    onClick={() => onConfirmPayment(app)}
+                    title="אישור תשלום והפקת קבלה"
+                    className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center hover:bg-emerald-100 transition-all duration-300 hover:scale-110"
+                  >
+                    <FileCheck className="w-5 h-5" />
+                  </button>
+                )}
+
+                {app.status === 'pending' && (
+                  <button
+                    onClick={() => onConfirm(app)}
+                    title="אשר תור"
+                    className="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center hover:bg-green-700 transition-all duration-300 hover:scale-110 shadow-lg shadow-green-200"
+                  >
+                    <Check className="w-5 h-5" />
+                  </button>
+                )}
+                
                 <button
-                  onClick={() => onConfirm(app)}
-                  title="אשר תור"
-                  className="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center hover:bg-green-700 transition-all duration-300 hover:scale-110 shadow-lg shadow-green-200"
+                  onClick={() => setShowNotes(!showNotes)}
+                  title="סיכום מפגש"
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${showNotes ? 'bg-[#7d7463] text-white' : 'bg-stone-50 text-stone-500 hover:bg-stone-100'}`}
                 >
-                  <Check className="w-5 h-5" />
+                  <FileText className="w-5 h-5" />
                 </button>
-              )}
-              <button
-                onClick={handleWhatsApp}
-                title={app.status === 'confirmed' ? "שלח תזכורת" : "שלח הודעת סטאטוס"}
-                className="w-10 h-10 bg-green-50 text-green-600 rounded-full flex items-center justify-center hover:bg-green-100 transition-all duration-300 hover:scale-110"
-              >
-                <MessageCircle className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => onEdit(app)}
-                title="ערוך פרטים"
-                className="w-10 h-10 bg-stone-50 text-stone-600 rounded-full flex items-center justify-center hover:bg-stone-100 transition-all duration-300 hover:scale-110"
-              >
-                <Edit2 className="w-5 h-5" />
-              </button>
-              {app.status === 'cancelled' ? (
+
                 <button
-                  onClick={() => onConfirm(app)}
-                  title="שחזר מפגש"
-                  className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center hover:bg-blue-100 transition-all duration-300 hover:scale-110"
+                  onClick={handleWhatsApp}
+                  title={app.status === 'confirmed' ? "שלח תזכורת" : "שלח הודעת סטאטוס"}
+                  className="w-10 h-10 bg-green-50 text-green-600 rounded-full flex items-center justify-center hover:bg-green-100 transition-all duration-300 hover:scale-110"
                 >
-                  <RefreshCw className="w-5 h-5" />
+                  <MessageCircle className="w-5 h-5" />
                 </button>
-              ) : (
                 <button
-                  onClick={() => onCancel(app)}
-                  title="בטל מפגש"
-                  className="w-10 h-10 bg-red-50 text-red-600 rounded-full flex items-center justify-center hover:bg-red-100 transition-all duration-300 hover:scale-110"
+                  onClick={() => onEdit(app)}
+                  title="ערוך פרטים"
+                  className="w-10 h-10 bg-stone-50 text-stone-600 rounded-full flex items-center justify-center hover:bg-stone-100 transition-all duration-300 hover:scale-110"
                 >
-                  <XCircle className="w-5 h-5" />
+                  <Edit2 className="w-5 h-5" />
                 </button>
-              )}
-              <button
-                onClick={() => onDelete(app.id)}
-                title="מחק לצמיתות"
-                className="w-10 h-10 bg-stone-50 text-stone-300 rounded-full flex items-center justify-center hover:text-red-400 transition-all duration-300 hover:scale-110"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
+                {app.status === 'cancelled' ? (
+                  <button
+                    onClick={() => onConfirm(app)}
+                    title="שחזר מפגש"
+                    className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center hover:bg-blue-100 transition-all duration-300 hover:scale-110"
+                  >
+                    <RefreshCw className="w-5 h-5" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onCancel(app)}
+                    title="בטל מפגש"
+                    className="w-10 h-10 bg-red-50 text-red-600 rounded-full flex items-center justify-center hover:bg-red-100 transition-all duration-300 hover:scale-110"
+                  >
+                    <XCircle className="w-5 h-5" />
+                  </button>
+                )}
+                <button
+                  onClick={() => onDelete(app.id)}
+                  title="מחק לצמיתות"
+                  className="w-10 h-10 bg-stone-50 text-stone-300 rounded-full flex items-center justify-center hover:text-red-400 transition-all duration-300 hover:scale-110"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Collapsible Session Notes Section */}
+        {showNotes && (
+          <div className="px-8 pb-6 pt-2 border-t border-stone-100 bg-stone-50/50 text-right space-y-3">
+            <label className="block text-xs font-bold text-stone-400">סיכום טיפול ומעקב</label>
+            <textarea
+              className="w-full bg-white border border-stone-200 rounded-lg p-4 text-sm focus:outline-none focus:ring-1 focus:ring-[#7d7463] text-right"
+              rows={3}
+              placeholder="רשמי כאן סיכום על המפגש, תובנות רגשיות ונומרולוגיות, שיעורי בית ונקודות למעקב..."
+              value={notesText}
+              onChange={e => setNotesText(e.target.value)}
+            />
+            <div className="flex justify-end gap-2">
+              <Button 
+                onClick={() => onSaveNotes(app.id, notesText)}
+                className="text-xs py-2 px-4"
+              >
+                שמור סיכום
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </Card>
   );

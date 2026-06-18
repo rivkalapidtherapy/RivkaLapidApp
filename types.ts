@@ -23,6 +23,14 @@ export interface GalleryItem {
   category: string;
 }
 
+export interface BookingItem {
+  id: string;
+  type: 'service' | 'product';
+  title: string;
+  price: number;
+  quantity: number;
+}
+
 export interface Appointment {
   id: string;
   serviceId: string;
@@ -31,10 +39,15 @@ export interface Appointment {
   clientPhone: string;
   date: string; // YYYY-MM-DD
   time: string; // HH:mm
-  status: 'confirmed' | 'cancelled' | 'pending';
+  status: 'confirmed' | 'cancelled' | 'pending' | 'attended' | 'paid';
   notes?: string;
   spiritualInsight?: string;
   createdAt: string;
+  paymentMethod?: 'Cash' | 'Bit' | 'Paybox' | null;
+  sumitDocumentId?: string | null;
+  sumitPdfUrl?: string | null;
+  sessionNotes?: string | null;
+  items?: BookingItem[];
 }
 
 export interface DailyHours {
@@ -56,8 +69,8 @@ export interface MessageTemplates {
   pending: string;
 }
 
-export type AppView = 'home' | 'booking' | 'admin' | 'confirmation' | 'portal';
-export type AdminTab = 'morning' | 'calendar' | 'appointments' | 'services' | 'analytics' | 'journal' | 'gallery' | 'settings' | 'clients';
+export type AppView = 'home' | 'booking' | 'admin' | 'confirmation' | 'portal' | 'content';
+export type AdminTab = 'morning' | 'calendar' | 'appointments' | 'services' | 'analytics' | 'journal' | 'gallery' | 'settings' | 'clients' | 'content_hub';
 export type NumerologyInsights = Record<number, string>;
 
 export interface JourneyNote {
@@ -67,3 +80,16 @@ export interface JourneyNote {
   content: string;
   createdAt: string;
 }
+
+export interface ContentItem {
+  id: string;
+  title: string;
+  type: 'post' | 'podcast' | 'video' | 'article';
+  mediaUrl?: string;
+  embedCode?: string;
+  description?: string;
+  summary?: string;
+  publicationDate: string;
+  createdAt?: string;
+}
+

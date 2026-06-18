@@ -5,12 +5,14 @@ import { AppView, Appointment } from './types';
 import BookingFlow from './components/BookingFlow';
 import AdminDashboard from './components/AdminDashboard';
 import ClientPortal from './components/ClientPortal';
+import ContentHub from './components/ContentHub';
 import { getDailyGreeting } from './services/geminiService';
 import { Button } from './components/UI';
 import { SERVICES as INITIAL_SERVICES, COLORS } from './constants';
 import { getAdminServices } from './services/bookingService';
 import { Service } from './types';
 import { Instagram, Facebook } from 'lucide-react';
+
 
 const WhatsAppIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
@@ -80,40 +82,40 @@ const App: React.FC = () => {
         return (
           <div className="relative">
             {/* Editorial Hero Section */}
-            <section className="relative min-h-screen flex flex-col md:flex-row items-stretch overflow-hidden bg-[#f5f2ed]">
+            <section className="relative min-h-screen flex flex-col lg:flex-row items-stretch overflow-hidden bg-[#f5f2ed]">
               {/* Left Content Side */}
               <motion.div
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                className="flex-1 flex flex-col justify-center px-8 md:px-20 py-32 relative z-10"
+                className="flex-1 flex flex-col justify-center px-6 md:px-16 lg:px-24 py-32 relative z-10"
               >
                 {/* Mobile background image */}
-                <div className="md:hidden absolute inset-0 z-[-1] overflow-hidden">
+                <div className="lg:hidden absolute inset-0 z-[-1] overflow-hidden">
                   <img
                     src="/rivka.png"
                     alt=""
-                    className="w-[120%] h-auto object-cover opacity-25 absolute -right-10 top-10"
+                    className="w-[120%] h-auto object-cover opacity-20 absolute -right-10 top-10"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#f5f2ed]"></div>
                 </div>
 
-                <div className="max-w-xl space-y-12">
-                  <div className="space-y-6">
+                <div className="max-w-xl space-y-10">
+                  <div className="space-y-4">
                     <motion.span
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5 }}
-                      className="text-[11px] md:text-xs uppercase tracking-[0.6em] text-[#7d7463] font-bold block"
+                      className="text-xs uppercase tracking-[0.5em] text-[#7d7463] font-bold block"
                     >
                       רבקה לפיד
                     </motion.span>
-                    <h1 className="text-6xl md:text-8xl font-light text-[#2d2a26] leading-[0.9] tracking-tighter">
+                    <h1 className="text-5xl md:text-7xl font-light text-[#2d2a26] leading-[1.05] tracking-tight">
                       תהליך ליווי <br />
                       <span className="serif italic font-normal text-[#7d7463]">נומרולוגי רגשי</span> <br />
-                      אישי
+                      אישי ומעצים
                     </h1>
-                    <p className="text-[#2d2a26]/60 text-sm md:text-base uppercase tracking-[0.3em] font-medium">
+                    <p className="text-[#2d2a26]/60 text-xs md:text-sm uppercase tracking-[0.3em] font-medium pt-2">
                       מטפלת רגשית, נומרולוגית ומנחת סדנאות
                     </p>
                   </div>
@@ -122,68 +124,175 @@ const App: React.FC = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.8 }}
-                    className="bg-white/40 backdrop-blur-sm border-y border-[#2d2a26]/10 py-16 px-10 -mx-10 shadow-sm"
+                    className="bg-white/40 backdrop-blur-sm border-y border-[#2d2a26]/10 py-10 px-8 shadow-sm rounded-sm"
                   >
                     <motion.p
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ delay: 1, duration: 1 }}
-                      className="text-[#2d2a26] text-2xl md:text-4xl font-light leading-tight serif italic text-center md:text-right"
+                      className="text-[#2d2a26] text-xl md:text-2xl font-light leading-relaxed serif italic text-right"
                     >
-                      {greeting}
+                      "הקשבה אמיתית אינה רק לאוזניים, היא נוכחות של הלב במרחב שבין המספרים למילים."
                     </motion.p>
                   </motion.div>
 
-                  <div className="pt-8 flex flex-col sm:flex-row items-center gap-8">
+                  <div className="pt-4 flex flex-col sm:flex-row items-center gap-6">
                     <Button
                       onClick={() => setView('booking')}
                       className="w-full sm:w-auto min-w-[260px] text-lg py-5 shadow-2xl shadow-[#7d7463]/20"
                     >
-                      לקביעת מפגש אישי
+                      לקביעת שיחת היכרות
                     </Button>
+                    <a
+                      href="https://wa.me/972547394577?text=שלום רבקה, אשמח לקבל פרטים לגבי שיחת היכרות ומפגש איתך"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#7d7463] hover:text-[#2d2a26] font-bold text-sm tracking-widest hover:underline transition-all"
+                    >
+                      פנייה מהירה בוואטסאפ ←
+                    </a>
                   </div>
                 </div>
               </motion.div>
 
-              {/* Right Image Side */}
+              {/* Right Media Side (Promotional Video Placeholder) */}
               <motion.div
-                initial={{ opacity: 0, scale: 1.1 }}
+                initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
-                className="hidden md:flex flex-1 relative items-center justify-center bg-[#f5f2ed]"
+                className="hidden lg:flex flex-1 relative items-center justify-center bg-[#f5f2ed] border-r border-[#2d2a26]/5 px-12"
               >
-                <div className="relative w-[80%] max-w-lg">
-                  <div className="absolute inset-0 bg-[#7d7463]/10 rounded-[50%_/_40%] blur-3xl animate-pulse"></div>
+                <div className="relative w-full max-w-xl aspect-video rounded-sm overflow-hidden shadow-2xl group cursor-pointer bg-stone-900">
+                  {/* Atmospheric Background Image */}
                   <img
-                    src="/rivka.png"
-                    alt="רבקה לפיד"
-                    className="relative z-10 w-full h-auto object-contain drop-shadow-2xl"
+                    src="https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=800"
+                    alt="סרטון תדמית רבקה לפיד"
+                    className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-all duration-[2s]"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  
+                  {/* Play Button Overlay */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white space-y-4">
+                    <div className="w-16 h-16 bg-white/20 hover:bg-white/35 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 border border-white/40 scale-100 group-hover:scale-110 shadow-lg shadow-black/20">
+                      <span className="text-2xl mr-1">▶</span>
+                    </div>
+                    <span className="text-xs uppercase tracking-[0.4em] font-bold opacity-80 group-hover:opacity-100 transition-opacity">סרטון תדמית - רבקה לפיד</span>
+                  </div>
                 </div>
               </motion.div>
             </section>
 
+            {/* Pain Points Section */}
+            <section className="py-28 px-6 md:px-16 bg-white border-b border-[#2d2a26]/5 text-right" dir="rtl">
+              <div className="max-w-4xl mx-auto space-y-16">
+                <div className="space-y-4 text-center md:text-right">
+                  <span className="text-xs uppercase tracking-[0.4em] text-[#7d7463] font-bold block">עצור לרגע להקשיב</span>
+                  <h2 className="text-4xl md:text-5xl font-light text-[#2d2a26] leading-tight">
+                    אם הגעת לכאן, יכול להיות שאת מרגישה ש...
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {[
+                    "את נותנת לכולם, אבל שכחת את עצמך בדרך.",
+                    "את יודעת שיש בך הרבה יותר, אבל משהו עוצר אותך.",
+                    "את מרגישה תקיעות שחוזרת שוב ושוב בתחומים שונים בחייך.",
+                    "את מחפשת זוגיות, שפע, ביטחון עצמי או כיוון, אבל לא מצליחה לפרוץ את המעגלים שחוזרים על עצמם.",
+                    "את פשוט רוצה לחזור להרגיש שמחה, מחוברת ונינוחה בתוך החיים שלך."
+                  ].map((point, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1, duration: 0.8 }}
+                      className="p-6 rounded-sm bg-[#f5f2ed]/40 border border-[#2d2a26]/5 flex items-start gap-4 hover:bg-[#f5f2ed]/80 transition-all duration-300"
+                    >
+                      <span className="text-xl text-[#7d7463] shrink-0">🌸</span>
+                      <p className="text-stone-700 text-sm md:text-base font-light leading-relaxed">{point}</p>
+                    </motion.div>
+                  ))}
+                </div>
+
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 }}
+                  className="text-center pt-8 border-t border-stone-100"
+                >
+                  <p className="text-xl text-[#2d2a26]/80 font-light italic serif">
+                    "אם הזדהית אפילו עם אחד מהדברים האלו, את במקום הנכון."
+                  </p>
+                </motion.div>
+              </div>
+            </section>
+
+            {/* About & Method Section */}
+            <section className="py-32 px-6 md:px-16 bg-[#f5f2ed] text-right" dir="rtl">
+              <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-16 items-center">
+                {/* Text Side */}
+                <div className="flex-1 space-y-8">
+                  <div className="space-y-4">
+                    <span className="text-xs uppercase tracking-[0.4em] text-[#7d7463] font-bold block">הגישה הטיפולית</span>
+                    <h2 className="text-4xl md:text-5xl font-light text-[#2d2a26] leading-tight serif italic">
+                      כאן מתחיל השינוי
+                    </h2>
+                  </div>
+
+                  <div className="space-y-6 text-[#2d2a26]/80 text-base md:text-lg font-light leading-relaxed">
+                    <p>
+                      אני לא מאמינה בטיפול שמתמקד רק במה שרואים על פני השטח. ביחד, נגיע לשורש החסמים שמנהלים אותך, נבין מה מעכב אותך וניצור תנועה חדשה, מדויקת ומיטיבה יותר עבורך.
+                    </p>
+                    <p className="font-medium text-[#7d7463]">
+                      התהליך שאני מלווה בו משלב בין טיפול רגשי, עבודה עם תת המודע ונומרולוגיה – שילוב שמאפשר להבין את התמונה הרחבה ולהוביל לשינוי עמוק, מחובר ומעשי.
+                    </p>
+                    
+                    {/* Highlighted UVP */}
+                    <div className="border-r-2 border-[#7d7463] pr-6 my-8 py-2 bg-white/40 rounded-sm">
+                      <p className="font-normal text-stone-800 italic">
+                        "מעבר לכלים הטיפוליים, אני מביאה איתי דרך הסתכלות ייחודית שפיתחתי לאורך למעלה מעשור כעורכת דין בכירה בתחום הנדל"ן, במסגרתו ליוויתי עסקאות מהגדולות והמובילות בצמרת המשק הישראלי."
+                      </p>
+                    </div>
+
+                    <p>
+                      השנים הללו לימדו אותי מיומנויות שהפכו היום לחלק בלתי נפרד מהעשייה שלי: יכולת אבחון גבוהה, זיהוי דפוסים, הקשבה עמוקה, דיוק בפרטים, ניהול משא ומתן ויכולת לראות את התמונה הרחבה לצד הפרטים הקטנים.
+                    </p>
+                    <p>
+                      היום, אני משתמשת בכל אותן יכולות כדי לעזור לנשים לנהל את המשא ומתן החשוב ביותר בחייהן – זה שהן מנהלות מול עצמן.
+                    </p>
+                    <p>
+                      המטרה שלי היא שתצאי עם הרבה יותר מפתרון נקודתי, אלא עם בהירות, ביטחון וכלים פרקטים שעובדים באמת ושילוו אותך לאורך המסע שלך כאן בחיים.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Visual Side */}
+                <div className="w-full lg:w-96 shrink-0 relative flex justify-center">
+                  <div className="absolute inset-0 bg-[#7d7463]/5 rounded-sm blur-2xl transform rotate-6"></div>
+                  <div className="relative border border-[#2d2a26]/10 p-4 bg-white rounded-sm shadow-xl max-w-sm">
+                    <img
+                      src="/rivka.png"
+                      alt="רבקה לפיד"
+                      className="w-full h-auto object-cover rounded-sm grayscale hover:grayscale-0 transition-all duration-[1.5s]"
+                    />
+                    <div className="pt-4 text-center">
+                      <span className="text-[10px] uppercase tracking-[0.3em] text-[#7d7463] font-bold block mb-1">רבקה לפיד</span>
+                      <span className="text-xs text-stone-400 font-light">מטפלת רגשית ונומרולוגית</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             {/* Visual Service Grid */}
-            <section className="py-32 px-8 bg-white">
+            <section className="py-32 px-6 bg-white">
               <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-24 space-y-6">
-                  <motion.span
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="text-xs uppercase tracking-[0.5em] text-[#7d7463] font-bold"
-                  >
-                    3 מסלולי ליווי
-                  </motion.span>
-                  <motion.h2
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2 }}
-                    className="text-5xl md:text-7xl font-light text-[#2d2a26]"
-                  >
+                  <span className="text-xs uppercase tracking-[0.5em] text-[#7d7463] font-bold block">3 מסלולי ליווי</span>
+                  <h2 className="text-4xl md:text-6xl font-light text-[#2d2a26]">
                     בחרי את התהליך המדויק עבורך
-                  </motion.h2>
+                  </h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -243,58 +352,6 @@ const App: React.FC = () => {
                   ))}
                 </div>
               </div>
-            </section>
-
-            {/* Welcome Section from Document */}
-            <section className="py-24 px-8 bg-[#f5f2ed] border-y border-[#2d2a26]/5">
-              <div className="max-w-4xl mx-auto text-center space-y-8">
-                <motion.h2
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  className="text-3xl md:text-4xl font-light text-[#2d2a26] serif italic"
-                >
-                  ברוכים הבאים לתהליך הליווי שלי!
-                </motion.h2>
-                <p className="text-[#2d2a26]/70 text-lg md:text-xl font-light leading-relaxed max-w-2xl mx-auto">
-                  תהליך עומק שמייצר תנועה פנימית באמצעות כלים פרקטיים שעובדים באמת, שבסופו של דבר, מקבלים ביטוי במציאות.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-12">
-                  {[
-                    { title: "אבחון נומרולוגי מדויק", icon: "🔢" },
-                    { title: "עבודה רגשית ממוקדת", icon: "🧘" },
-                    { title: "כלים תודעתיים ורוחניים", icon: "✨" }
-                  ].map((item, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                      className="p-8 bg-white/50 rounded-sm border border-[#2d2a26]/5"
-                    >
-                      <div className="text-3xl mb-4">{item.icon}</div>
-                      <h4 className="text-sm uppercase tracking-widest font-bold text-[#2d2a26]">{item.title}</h4>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            {/* Quote Section */}
-            <section className="py-48 px-8 bg-[#f5f2ed]">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className="max-w-4xl mx-auto text-center space-y-12"
-              >
-                <div className="w-20 h-20 bg-[#7d7463]/10 rounded-full flex items-center justify-center mx-auto">
-                  <span className="text-[#7d7463] text-3xl">✨</span>
-                </div>
-                <blockquote className="text-4xl md:text-6xl font-light text-[#2d2a26] leading-tight italic serif">
-                  "הקשבה אמיתית אינה רק לאוזניים, היא נוכחות של הלב במרחב שבין המספרים למילים."
-                </blockquote>
-                <div className="h-[1px] w-24 bg-[#2d2a26]/10 mx-auto"></div>
-              </motion.div>
             </section>
           </div>
         );
@@ -387,6 +444,9 @@ const App: React.FC = () => {
           </div>
         );
 
+      case 'content':
+        return <ContentHub />;
+
       case 'portal':
         if (!portalPhone) return null;
         return <ClientPortal clientPhone={portalPhone} onClose={() => setView('home')} />;
@@ -419,6 +479,7 @@ const App: React.FC = () => {
           <div className="hidden md:flex space-x-12 space-x-reverse text-[11px] uppercase tracking-[0.3em] font-bold text-[#2d2a26]">
             <button onClick={() => setView('home')} className={`hover:text-[#7d7463] transition-colors duration-300 ${view === 'home' ? 'text-[#7d7463]' : ''}`}>בית</button>
             <button onClick={() => setView('booking')} className={`hover:text-[#7d7463] transition-colors duration-300 ${view === 'booking' ? 'text-[#7d7463]' : ''}`}>מפגשים</button>
+            <button onClick={() => setView('content')} className={`hover:text-[#7d7463] transition-colors duration-300 ${view === 'content' ? 'text-[#7d7463]' : ''}`}>תוכן והשראה</button>
             <button onClick={() => setView('admin')} className={`hover:text-[#7d7463] transition-colors duration-300 ${view === 'admin' ? 'text-[#7d7463]' : ''}`}>ניהול</button>
           </div>
 
@@ -455,6 +516,12 @@ const App: React.FC = () => {
                 className={`text-sm uppercase tracking-widest font-bold ${view === 'booking' ? 'text-[#7d7463]' : 'text-[#2d2a26]'}`}
               >
                 מפגשים
+              </button>
+              <button
+                onClick={() => { setView('content'); setIsMobileMenuOpen(false); }}
+                className={`text-sm uppercase tracking-widest font-bold ${view === 'content' ? 'text-[#7d7463]' : 'text-[#2d2a26]'}`}
+              >
+                תוכן והשראה
               </button>
               <button
                 onClick={() => { setView('admin'); setIsMobileMenuOpen(false); }}
