@@ -48,6 +48,7 @@ export interface Appointment {
   sumitPdfUrl?: string | null;
   sessionNotes?: string | null;
   items?: BookingItem[];
+  googleEventId?: string;
 }
 
 export interface DailyHours {
@@ -92,4 +93,63 @@ export interface ContentItem {
   publicationDate: string;
   createdAt?: string;
 }
+
+export interface NumerologyProfile {
+  id: string;
+  clientEmail: string;
+  birthDate: string;
+  destinyNumber?: number;
+  dayNumber?: number;
+  personalYear?: number;
+  readingContent?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ClientReflection {
+  id: string;
+  clientEmail: string;
+  title: string;
+  content: string;
+  shareWithTherapist: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ClientTask {
+  id: string;
+  clientEmail: string;
+  title: string;
+  description?: string;
+  dueDate?: string;
+  isCompleted: boolean;
+  completedAt?: string | null;
+  createdAt: string;
+}
+
+export interface ClientSavedContent {
+  id: string;
+  clientEmail: string;
+  contentId: string;
+  createdAt: string;
+}
+
+export interface ClientRecommendedContent {
+  id: string;
+  clientEmail: string;
+  contentId: string;
+  recommendationNote?: string;
+  createdAt: string;
+}
+
+export interface GoogleCredentials {
+  id: string;
+  userEmail: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 

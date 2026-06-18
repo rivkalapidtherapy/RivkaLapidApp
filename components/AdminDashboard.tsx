@@ -10,6 +10,9 @@ import {
   addService, deleteService, confirmAppointment, getMessageTemplates, updateMessageTemplates, getReminderMessage, getPendingMessage,
   uploadImage, getNumerologyInsights, updateNumerologyInsights, generateReceipt, getContentHubItems, addContentHubItem, deleteContentHubItem, loadDemoData
 } from '../services/bookingService';
+import {
+  getGoogleOAuthUrl, isGoogleCalendarConnected, getConnectedAdminEmail, exchangeCodeForTokens, disconnectGoogleCalendar, syncAppointmentToGoogleCalendar, deleteGoogleCalendarEvent
+} from '../services/googleCalendarService';
 import { getWeeklyJournal } from '../services/geminiService';
 import { Card, Button, Input } from './UI';
 import { AdminClientsTab } from './AdminClientsTab';
@@ -42,6 +45,11 @@ const AdminDashboard: React.FC = () => {
   const [calendarFilterDate, setCalendarFilterDate] = useState<string | null>(null);
   const [templates, setTemplates] = useState<MessageTemplates | null>(null);
   const [numerologyInsights, setNumerologyInsights] = useState<NumerologyInsights | null>(null);
+
+  // Google Calendar integration states
+  const [isGoogleConnected, setIsGoogleConnected] = useState(false);
+  const [googleEmail, setGoogleEmail] = useState<string | null>(null);
+  const [isCheckingGoogle, setIsCheckingGoogle] = useState(false);
 
   // Invoicing & Content Hub CMS states
   const [selectedAppForPayment, setSelectedAppForPayment] = useState<Appointment | null>(null);
@@ -86,6 +94,57 @@ const AdminDashboard: React.FC = () => {
   }, [notification]);
 
   useEffect(() => {
+    const checkGoogleStatus = async () => {
+      setIsCheckingGoogle(true);
+      try {
+        const connected = await isGoogleCalendarConnected();
+        setIsGoogleConnected(connected);
+        if (connected) {
+          const email = await getConnectedAdminEmail();
+          setGoogleEmail(email);
+        }
+      } catch (err) {
+        console.error("Error checking Google Calendar connection:", err);
+      } finally {
+        setIsCheckingGoogle(false);
+      }
+    };
+
+    checkGoogleStatus();
+
+    // Check for Google OAuth callback code in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    if (code) {
+      handleGoogleCallback(code);
+    }
+  }, []);
+
+  const handleGoogleCallback = async (code: string) => {
+    setIsCheckingGoogle(true);
+    try {
+      const redirectUri = window.location.origin + '/';
+      const email = await exchangeCodeForTokens(code, redirectUri);
+      if (email) {
+        setGoogleEmail(email);
+        setIsGoogleConnected(true);
+        setNotification({ message: `יומן גוגל חובר בהצלחה לחשבון: ${email}`, type: 'success' });
+      } else {
+        setNotification({ message: 'חיבור יומן גוגל נכשל. ודאי שהגדרת את ה-Redirect URI בגוגל קונסול.', type: 'error' });
+      }
+    } catch (err) {
+      console.error(err);
+      setNotification({ message: 'שגיאה בתקשורת עם גוגל', type: 'error' });
+    } finally {
+      setIsCheckingGoogle(false);
+      // Clean query params in URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete('code');
+      window.history.replaceState({}, document.title, url.pathname);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [activeTab]);
 
@@ -122,6 +181,16 @@ const AdminDashboard: React.FC = () => {
   const handleConfirm = async (app: Appointment) => {
     await confirmAppointment(app.id);
     const service = services.find(s => s.id === app.serviceId);
+    
+    // Sync to Google Calendar if connected
+    if (isGoogleConnected) {
+      try {
+        await syncAppointmentToGoogleCalendar(app, service?.type || 'מפגש');
+      } catch (err) {
+        console.error("Failed to sync confirmed appointment to Google Calendar:", err);
+      }
+    }
+
     sendWhatsAppMessage(app.clientPhone, getConfirmationMessage(app, service?.type || 'מפגש'));
     setNotification({ message: 'המפגש אושר והודעה נשלחה למטופלת', type: 'success' });
     setConfirmAction(null);
@@ -130,6 +199,16 @@ const AdminDashboard: React.FC = () => {
 
   const handleCancelAndNotify = async (app: Appointment) => {
     await cancelAppointment(app.id);
+    
+    // Delete Google Calendar event if connected and event exists
+    if (isGoogleConnected && app.googleEventId) {
+      try {
+        await deleteGoogleCalendarEvent(app.googleEventId);
+      } catch (err) {
+        console.error("Failed to delete event from Google Calendar on cancel:", err);
+      }
+    }
+
     const service = services.find(s => s.id === app.serviceId);
     sendWhatsAppMessage(app.clientPhone, getCancellationMessage(app, service?.type || 'מפגש'));
     setNotification({ message: 'המפגש בוטל והודעה נשלחה למטופלת', type: 'success' });
@@ -138,7 +217,18 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
+    const app = appointments.find(a => a.id === id);
     await deleteAppointment(id);
+    
+    // Delete Google Calendar event if connected and event exists
+    if (isGoogleConnected && app?.googleEventId) {
+      try {
+        await deleteGoogleCalendarEvent(app.googleEventId);
+      } catch (err) {
+        console.error("Failed to delete event from Google Calendar on delete:", err);
+      }
+    }
+
     setNotification({ message: 'המפגש נמחק לצמיתות מהיומן', type: 'success' });
     setConfirmAction(null);
     fetchData();
@@ -160,6 +250,23 @@ const AdminDashboard: React.FC = () => {
     e.preventDefault();
     if (!editingApp) return;
     await updateAppointment(editingApp.id, editingApp);
+    
+    // Sync to Google Calendar if connected and is confirmed/attended/paid status
+    if (isGoogleConnected && (editingApp.status === 'confirmed' || editingApp.status === 'attended' || editingApp.status === 'paid')) {
+      const service = services.find(s => s.id === editingApp.serviceId);
+      try {
+        await syncAppointmentToGoogleCalendar(editingApp, service?.type || 'מפגש');
+      } catch (err) {
+        console.error("Failed to sync updated appointment to Google Calendar:", err);
+      }
+    } else if (isGoogleConnected && editingApp.status === 'cancelled' && editingApp.googleEventId) {
+      try {
+        await deleteGoogleCalendarEvent(editingApp.googleEventId);
+      } catch (err) {
+        console.error("Failed to delete cancelled event from Google Calendar:", err);
+      }
+    }
+
     setEditingApp(null);
     setNotification({ message: 'פרטי המפגש עודכנו בהצלחה', type: 'success' });
     fetchData();
@@ -623,6 +730,61 @@ const AdminDashboard: React.FC = () => {
                   }}
                 />
               )}
+
+              <Card className="max-w-4xl mx-auto space-y-8 !p-12">
+                <div className="border-b border-stone-100 pb-6 text-center">
+                  <h3 className="text-3xl font-light mb-2">סנכרון יומן Google Calendar</h3>
+                  <p className="text-stone-400 text-sm italic">חברי את יומן הפגישות ליומן Google האישי שלך. פגישות שיאושרו יתווספו באופן אוטומטי ליומן שלך ופגישות שיבוטלו או יימחקו יוסרו.</p>
+                </div>
+
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-stone-50 p-8 rounded-2xl border border-stone-100">
+                  <div className="space-y-2 text-right">
+                    <h4 className="text-lg font-medium text-stone-800">מצב חיבור יומן גוגל</h4>
+                    {isCheckingGoogle ? (
+                      <p className="text-stone-400 text-sm">בודק חיבור ליומן גוגל...</p>
+                    ) : isGoogleConnected ? (
+                      <p className="text-emerald-600 font-bold text-sm flex items-center gap-1 justify-end" dir="ltr">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1"></span>
+                        מחובר לחשבון: {googleEmail}
+                      </p>
+                    ) : (
+                      <p className="text-stone-400 text-sm">יומן גוגל אינו מחובר. סנכרון תורים אוטומטי כבוי.</p>
+                    )}
+                  </div>
+                  
+                  <div className="flex gap-4">
+                    {isGoogleConnected ? (
+                      <Button
+                        variant="outline"
+                        onClick={async () => {
+                          const ok = await disconnectGoogleCalendar();
+                          if (ok) {
+                            setIsGoogleConnected(false);
+                            setGoogleEmail(null);
+                            setNotification({ message: 'חיבור יומן גוגל הוסר בהצלחה', type: 'success' });
+                          } else {
+                            setNotification({ message: 'שגיאה בהסרת החיבור', type: 'error' });
+                          }
+                        }}
+                        className="border-red-200 text-red-600 hover:bg-red-50"
+                      >
+                        נתק יומן גוגל
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => {
+                          const redirectUri = window.location.origin + '/';
+                          window.location.href = getGoogleOAuthUrl(redirectUri);
+                        }}
+                        disabled={isCheckingGoogle}
+                        className="bg-stone-800 text-white hover:bg-stone-900"
+                      >
+                        {isCheckingGoogle ? 'טוען...' : 'חברי את יומן גוגל'}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </Card>
 
               <Card className="max-w-4xl mx-auto space-y-8 !p-12 border border-[#7d7463]/25 bg-[#7d7463]/5">
                 <div className="border-b border-[#7d7463]/10 pb-6 text-center">

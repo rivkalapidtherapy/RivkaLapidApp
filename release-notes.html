@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>רבקה לפיד - מדריך המוצר המלא</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,700&display=swap');
+
+    :root {
+      --bg-color: #f6f3ed;
+      --card-bg: #ffffff;
+      --accent-color: #8c816e;
+      --accent-hover: #756a59;
+      --accent-light: #fbfaf8;
+      --accent-glow: rgba(140, 129, 110, 0.15);
+      --text-color: #2e2a25;
+      --text-muted: #736b60;
+      --border-color: #e6e2db;
+      --success-color: #2b7a4b;
+      --success-bg: #eaf5ee;
+      --google-blue: #4285f4;
+      --sumit-green: #00b050;
+      --shadow-sm: 0 4px 12px rgba(140, 129, 110, 0.05);
+      --shadow-md: 0 12px 30px rgba(140, 129, 110, 0.1);
+      --shadow-lg: 0 20px 40px rgba(140, 129, 110, 0.15);
+      --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Assistant', sans-serif;
+      line-height: 1.6;
+      padding: 60px 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Header Styling */
+    header {
+      text-align: center;
+      margin-bottom: 60px;
+      position: relative;
+    }
+
+    header span {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4em;
+      color: var(--accent-color);
+      display: block;
+      margin-bottom: 15px;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      font-weight: 300;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+    }
+
+    header h1 em {
+      font-style: italic;
+      color: var(--accent-color);
+      font-weight: 400;
+    }
+
+    header p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      font-weight: 300;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .divider {
+      width: 80px;
+      height: 2px;
+      background-color: var(--accent-color);
+      opacity: 0.3;
+      margin: 30px auto;
+    }
+
+    /* Top Navigation Blocks - Summary Cubes */
+    .summary-grid {
+      display: grid;
+      grid-template-cols: 1fr;
+      gap: 25px;
+      margin-bottom: 80px;
+    }
+
+    @media (min-width: 640px) {
+      .summary-grid {
+        grid-template-cols: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .summary-grid {
+        grid-template-cols: repeat(4, 1fr);
+      }
+    }
+
+    .summary-cube {
+      background-color: var(--card-bg);
+      border-radius: 28px;
+      border: 1px solid var(--border-color);
+      padding: 35px 25px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .summary-cube::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background-color: var(--accent-color);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .summary-cube.new-module::before {
+      background-color: var(--success-color);
+    }
+
+    .summary-cube:hover {
+      transform: translateY(-8px);
+      border-color: var(--accent-color);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .summary-cube:hover::before {
+      opacity: 1;
+    }
+
+    .cube-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 10px;
+      font-weight: 700;
+      background-color: var(--success-bg);
+      color: var(--success-color);
+      padding: 4px 10px;
+      border-radius: 50px;
+    }
+
+    .cube-icon {
+      font-size: 36px;
+      margin-bottom: 20px;
+      background-color: var(--bg-color);
+      width: 70px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: var(--transition);
+    }
+
+    .summary-cube:hover .cube-icon {
+      background-color: var(--accent-color);
+      color: white;
+      transform: scale(1.08);
+    }
+
+    .cube-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-color);
+    }
+
+    .cube-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-weight: 300;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .cube-bullets {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: right;
+      width: 100%;
+      margin-bottom: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .cube-bullet {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cube-bullet::before {
+      content: '✦';
+      color: var(--accent-color);
+      font-size: 10px;
+    }
+
+    .cube-action {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent-color);
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: auto;
+      transition: var(--transition);
+    }
+
+    .summary-cube:hover .cube-action {
+      color: var(--accent-hover);
+      gap: 8px;
+    }
+
+    /* Showcase Layouts */
+    .showcase-section {
+      background-color: var(--card-bg);
+      border-radius: 36px;
+      border: 1px solid var(--border-color);
+      padding: 60px 30px;
+      margin-bottom: 80px;
+      box-shadow: var(--shadow-md);
+      scroll-margin-top: 40px;
+      position: relative;
+    }
+
+    @media (min-width: 768px) {
+      .showcase-section {
+        padding: 70px 60px;
+      }
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 30px;
+      margin-bottom: 45px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem;
+      font-weight: 300;
+    }
+
+    .section-badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+      background-color: var(--accent-color);
+      color: white;
+      padding: 6px 18px;
+      border-radius: 50px;
+      letter-spacing: 1px;
+    }
+
+    .section-badge.new {
+      background-color: var(--success-color);
+    }
+
+    /* Grid Layout for visual split */
+    .feature-layout {
+      display: grid;
+      grid-template-cols: 1fr;
+      gap: 50px;
+      align-items: center;
+    }
+
+    @media (min-width: 1024px) {
+      .feature-layout {
+        grid-template-cols: 1.1fr 0.9fr;
+      }
+      .feature-layout.reverse {
+        grid-template-cols: 0.9fr 1.1fr;
+      }
+      .feature-layout.reverse .text-content {
+        order: 2;
+      }
+      .feature-layout.reverse .visual-content {
+        order: 1;
+      }
+    }
+
+    /* Text & Content Elements */
+    .text-content {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .feature-item-desc h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 400;
+      margin-bottom: 12px;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .feature-item-desc h3 em {
+      font-style: italic;
+      font-weight: 600;
+      color: var(--accent-color);
+    }
+
+    .feature-item-desc p {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    /* Mockup Containers */
+    .visual-content {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      perspective: 1000px;
+    }
+
+    /* Mockup Browser Window */
+    .mock-browser {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .mock-browser:hover {
+      transform: translateY(-5px) rotateX(1deg) rotateY(-1deg);
+    }
+
+    .browser-bar {
+      height: 40px;
+      background: #f1ede6;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 8px;
+      position: relative;
+    }
+
+    .browser-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .browser-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-close { background: #ff5f56; }
+    .dot-min { background: #ffbd2e; }
+    .dot-max { background: #27c93f; }
+
+    .browser-address {
+      background: #ffffff;
+      height: 24px;
+      flex-grow: 1;
+      border-radius: 6px;
+      margin: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: monospace;
+      border: 1px solid rgba(140, 129, 110, 0.15);
+      direction: ltr;
+    }
+
+    .browser-content {
+      padding: 24px;
+      background: var(--accent-light);
+      min-height: 280px;
+    }
+
+    /* Mock Phone */
+    .mock-phone {
+      width: 320px;
+      background: #000000;
+      border-radius: 40px;
+      padding: 12px;
+      box-shadow: var(--shadow-lg);
+      border: 4px solid #1a1a1a;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .mock-phone:hover {
+      transform: translateY(-8px) rotateY(5deg);
+    }
+
+    .phone-screen {
+      background: var(--bg-color);
+      border-radius: 30px;
+      width: 100%;
+      min-height: 520px;
+      overflow: hidden;
+      border: 1px solid #222;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .phone-header {
+      height: 35px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 11px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .phone-notch {
+      width: 110px;
+      height: 18px;
+      background: #000000;
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 12px;
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+    }
+
+    .phone-content {
+      padding: 18px;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    /* Visual Previews & Diagrams (CSS Wireframes) */
+    
+    /* CMS editorial preview */
+    .editorial-hero-mock {
+      text-align: center;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 20px;
+    }
+
+    .editorial-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--accent-color);
+      margin-bottom: 10px;
+      display: inline-block;
+    }
+
+    .editorial-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      line-height: 1.2;
+      font-weight: 300;
+      margin-bottom: 12px;
+    }
+
+    .editorial-video-player {
+      background: #2e2a25;
+      height: 130px;
+      border-radius: 12px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .video-overlay-play {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: var(--text-color);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: var(--transition);
+      z-index: 2;
+    }
+
+    .video-overlay-play:hover {
+      transform: scale(1.1);
+      background: #ffffff;
+    }
+
+    .video-bg-waves {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      height: 20px;
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      justify-content: center;
+      opacity: 0.4;
+    }
+
+    .wave-bar {
+      width: 3px;
+      background: #ffffff;
+      border-radius: 2px;
+      animation: bounce-wave 1.2s ease-in-out infinite alternate;
+    }
+    .wave-bar:nth-child(2) { height: 15px; animation-delay: 0.2s; }
+    .wave-bar:nth-child(3) { height: 8px; animation-delay: 0.4s; }
+    .wave-bar:nth-child(4) { height: 18px; animation-delay: 0.1s; }
+    .wave-bar:nth-child(5) { height: 11px; animation-delay: 0.3s; }
+
+    @keyframes bounce-wave {
+      0% { transform: scaleY(0.3); }
+      100% { transform: scaleY(1); }
+    }
+
+    .media-hub-grid {
+      display: grid;
+      grid-template-cols: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .hub-card-mock {
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+
+    .hub-badge {
+      font-size: 8px;
+      font-weight: 700;
+      color: var(--accent-color);
+      background: var(--bg-color);
+      padding: 2px 6px;
+      border-radius: 4px;
+      align-self: flex-start;
+    }
+
+    .hub-title {
+      font-size: 10px;
+      font-weight: bold;
+      margin: 8px 0;
+    }
+
+    .hub-footer {
+      font-size: 9px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .spotify-logo {
+      color: #1ed760;
+      font-weight: bold;
+      font-size: 10px;
+    }
+
+    /* Booking Wizard mock style */
+    .booking-mock {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      padding: 16px;
+    }
+
+    .booking-header {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    .booking-progress {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .progress-step {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--border-color);
+      font-size: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+    }
+
+    .progress-step.active {
+      background: var(--accent-color);
+      color: white;
+      font-weight: bold;
+    }
+
+    .service-card-mock {
+      border: 1px solid var(--accent-color);
+      border-radius: 10px;
+      padding: 10px;
+      background: var(--accent-light);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .service-title-mock {
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .service-price-mock {
+      font-size: 11px;
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+
+    .calendar-widget-mock {
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fafaf9;
+    }
+
+    .calendar-month-mock {
+      font-size: 10px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .calendar-days-mock {
+      display: grid;
+      grid-template-cols: repeat(6, 1fr);
+      gap: 4px;
+      text-align: center;
+      font-size: 8px;
+      margin-bottom: 8px;
+    }
+
+    .day-mock {
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+
+    .day-mock.enabled {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      cursor: pointer;
+    }
+
+    .day-mock.selected {
+      background: var(--accent-color);
+      color: white;
+      border-color: var(--accent-color);
+      font-weight: bold;
+    }
+
+    .time-slots-mock {
+      display: grid;
+      grid-template-cols: repeat(4, 1fr);
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .time-slot-mock {
+      font-size: 8px;
+      text-align: center;
+      padding: 4px;
+      border-radius: 4px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+    }
+
+    .time-slot-mock.active {
+      background: var(--accent-color);
+      color: white;
+      border-color: var(--accent-color);
+    }
+
+    .time-slot-mock.break {
+      background: #f1ede6;
+      color: #b3a99a;
+      text-decoration: line-through;
+      border-color: transparent;
+    }
+
+    /* Client Portal visual styles */
+    .portal-mock {
+      background: #ffffff;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .portal-nav {
+      background: var(--text-color);
+      color: white;
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .portal-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .user-name {
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .google-signin-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255,255,255,0.15);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 9px;
+    }
+
+    .google-logo-icon {
+      width: 10px;
+      height: 10px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7px;
+      color: var(--google-blue);
+      font-weight: 900;
+    }
+
+    .portal-dashboard {
+      padding: 16px;
+      background: var(--accent-light);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .numerology-map-mock {
+      display: grid;
+      grid-template-cols: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .num-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .num-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent-color);
+      line-height: 1.1;
+    }
+
+    .num-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      display: block;
+      font-weight: 700;
+    }
+
+    .journal-widget-mock {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .journal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .journal-title {
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .journal-input {
+      width: 100%;
+      height: 60px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--accent-light);
+      padding: 8px;
+      font-size: 9px;
+      color: var(--text-muted);
+      resize: none;
+      font-family: inherit;
+    }
+
+    .journal-btn {
+      background: var(--accent-color);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 6px;
+      align-self: flex-start;
+      margin-top: 6px;
+      border: none;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .tasks-widget-mock {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .tasks-progress-bar {
+      height: 4px;
+      background: var(--bg-color);
+      border-radius: 2px;
+      margin: 8px 0;
+      overflow: hidden;
+    }
+
+    .tasks-progress-fill {
+      height: 100%;
+      background: var(--success-color);
+      width: 66%;
+    }
+
+    .task-item-mock {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 9px;
+      border-bottom: 1px dashed var(--border-color);
+    }
+    .task-item-mock:last-child {
+      border-bottom: none;
+    }
+
+    .task-status-circle {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid var(--accent-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .task-status-circle.checked {
+      background: var(--success-color);
+      border-color: var(--success-color);
+    }
+    .task-status-circle.checked::after {
+      content: '✓';
+      color: white;
+      font-size: 8px;
+    }
+
+    /* Admin Dashboard visual styles */
+    .admin-mock {
+      background: #ffffff;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .admin-sidebar {
+      background: #2e2a25;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .admin-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 11px;
+      font-style: italic;
+      color: #f1ede6;
+    }
+
+    .admin-dashboard-layout {
+      background: var(--accent-light);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .ai-zen-card {
+      background: linear-gradient(135deg, #fdfbf7, #f6f1e5);
+      border-radius: 12px;
+      padding: 15px;
+      border: 1px solid rgba(140,129,110,0.25);
+      position: relative;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .ai-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--accent-color);
+      color: white;
+      font-size: 7px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .ai-title {
+      font-size: 10px;
+      font-weight: bold;
+      color: var(--accent-color);
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .ai-quote {
+      font-size: 10px;
+      font-style: italic;
+      line-height: 1.4;
+      color: var(--text-color);
+      font-weight: 300;
+    }
+
+    .sync-timeline-mock {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .sync-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 8px 0;
+    }
+
+    .sync-node {
+      font-size: 10px;
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    .sync-node.google {
+      background: #e8f0fe;
+      color: var(--google-blue);
+      border-color: #d2e3fc;
+    }
+
+    .sync-node.supabase {
+      background: #e6fcf5;
+      color: var(--success-color);
+      border-color: #c2f9e9;
+    }
+
+    .sync-arrow {
+      font-size: 12px;
+      color: var(--accent-color);
+      animation: pulse-arrow 1.5s infinite alternate;
+    }
+
+    @keyframes pulse-arrow {
+      0% { transform: scaleX(0.8); opacity: 0.5; }
+      100% { transform: scaleX(1.2); opacity: 1; }
+    }
+
+    .invoicing-table-mock {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .invoice-row {
+      display: grid;
+      grid-template-cols: 1.5fr 1fr 1fr 1fr;
+      font-size: 9px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--bg-color);
+      align-items: center;
+    }
+    .invoice-row:last-child {
+      border-bottom: none;
+    }
+
+    .invoice-row.header {
+      font-weight: bold;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .invoice-status-badge {
+      font-size: 8px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .invoice-status-badge.paid {
+      background: var(--success-bg);
+      color: var(--success-color);
+    }
+    .invoice-status-badge.pending {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    /* Footer styling */
+    footer {
+      text-align: center;
+      margin-top: 100px;
+      padding: 50px 0;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 300;
+    }
+
+    footer em {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      display: block;
+      margin-bottom: 15px;
+      color: var(--text-color);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <span>מדריך המוצר והתכונות המלא</span>
+      <h1>רבקה לפיד — <em>אפליקציית הקליניקה</em></h1>
+      <p>מרחב דיגיטלי שלם לניהול פגישות, סנכרון יומן גוגל, עריכת מפות נומרולוגיות, הפקת קבלות, וכתיבת יומני מסע למטופלים.</p>
+      <div class="divider"></div>
+    </header>
+
+    <!-- 1. Interactive Navigation Grid (Summary Cubes) -->
+    <div class="summary-grid">
+      
+      <!-- Cube A -->
+      <div class="summary-cube" onclick="document.getElementById('landing-content').scrollIntoView({behavior: 'smooth'})">
+        <div class="cube-icon">✨</div>
+        <h4 class="cube-title">תדמית והשראה</h4>
+        <p class="cube-desc">אתר תדמימי אדיטוריאלי ומרכז מדיה דינמי (CMS) המאפשר שיתוף של מאמרים, פוסטים ופרקי פודקאסט לקהל הרחב.</p>
+        <div class="cube-bullets">
+          <span class="cube-bullet">חוויית מותג אדיטוריאלית</span>
+          <span class="cube-bullet">וידאו תדמיתי מותאם מובייל</span>
+          <span class="cube-bullet">מרכז השראה (Content Hub)</span>
+        </div>
+        <span class="cube-action">לצפייה בפירוט הויזואלי ➔</span>
+      </div>
+
+      <!-- Cube B -->
+      <div class="summary-cube" onclick="document.getElementById('booking-flow').scrollIntoView({behavior: 'smooth'})">
+        <div class="cube-icon">🗓️</div>
+        <h4 class="cube-title">זימון פגישות עצמי</h4>
+        <p class="cube-desc">אשף זימון פגישות חכם (Wizard) ללקוחות, התחשבות אוטומטית בשעות פעילות מוגדרות מראש והפסקות.</p>
+        <div class="cube-bullets">
+          <span class="cube-bullet">אשף זימון בשלבים פשוטים</span>
+          <span class="cube-bullet">הגדרת זמנים והפסקות שבועיות</span>
+          <span class="cube-bullet">הזנת פרטים ותאריך לידה מראש</span>
+        </div>
+        <span class="cube-action">לצפייה בפירוט הויזואלי ➔</span>
+      </div>
+
+      <!-- Cube C -->
+      <div class="summary-cube new-module" onclick="document.getElementById('client-portal').scrollIntoView({behavior: 'smooth'})">
+        <span class="cube-badge">גרסה 2.0</span>
+        <div class="cube-icon">🔐</div>
+        <h4 class="cube-title">מרחב אישי למטופל</h4>
+        <p class="cube-desc">מרחב אישי מאובטח עם התחברות Google, מפה נומרולוגית אישית, יומן מסע שיתופי ומעקב משימות ביתיות.</p>
+        <div class="cube-bullets">
+          <span class="cube-bullet">התחברות Google מאובטחת</span>
+          <span class="cube-bullet">מפה נומרולוגית אישית וזוהרת</span>
+          <span class="cube-bullet">יומן מסע אינטראקטיבי ומשימות</span>
+        </div>
+        <span class="cube-action">לצפייה בפירוט הויזואלי ➔</span>
+      </div>
+
+      <!-- Cube D -->
+      <div class="summary-cube new-module" onclick="document.getElementById('admin-dashboard').scrollIntoView({behavior: 'smooth'})">
+        <span class="cube-badge">גרסה 2.0</span>
+        <div class="cube-icon">👥</div>
+        <h4 class="cube-title">לוח בקרה ו-CRM</h4>
+        <p class="cube-desc">לוח ניהול מקיף למטפלת עם סנכרון דו-כיווני לגוגל קלנדר, חיבור Sumit להפקת קבלות וברכת AI יומית.</p>
+        <div class="cube-bullets">
+          <span class="cube-bullet">ברכת AI (Gemini) אישית יומית</span>
+          <span class="cube-bullet">סנכרון יומן Google Calendar</span>
+          <span class="cube-bullet">הפקת חשבוניות אוטומטית ב-Sumit</span>
+        </div>
+        <span class="cube-action">לצפייה בפירוט הויזואלי ➔</span>
+      </div>
+
+    </div>
+
+    <!-- 2. Detailed Visual Showcase Sections -->
+
+    <!-- Section A: Landing & Content -->
+    <section id="landing-content" class="showcase-section">
+      <div class="section-header">
+        <span class="section-badge">אזור לקוח קצה</span>
+        <h2 class="section-title">אתר תדמית ומרכז השראה (CMS)</h2>
+      </div>
+      
+      <div class="feature-layout">
+        <div class="text-content">
+          <div class="feature-item-desc">
+            <h3>חוויית מותג <em>אדיטוריאלית ויוקרתית</em></h3>
+            <p>
+              עיצוב הדף הראשי מתבסס על אסתטיקה נקייה השואבת השראה מכתבי עת מודרניים. השימוש בגווני חול רכים וטיפוגרפיה סריפית יוצר תחושת שלווה. במחשב ובמובייל מוטמע סרטון תדמית רץ ברקע שיוצר חיבור מיידי.
+            </p>
+          </div>
+          <div class="feature-item-desc">
+            <h3>מרכז מדיה <em>והשראה דינמי (Content Hub)</em></h3>
+            <p>
+              רבקה יכולה להעלות ולנהל בקלות תכנים מסוגים שונים: מאמרים עמוקים לקריאה, פוסטים מהירים עם תובנות יומיות, פרקי פודקאסט מובנים וסרטונים. לקוחות יכולים להאזין ולצפות ישירות מתוך כרטיסי התוכן באתר.
+            </p>
+          </div>
+        </div>
+
+        <div class="visual-content">
+          <!-- Visual representation: browser showcasing editorial and media cards -->
+          <div class="mock-browser">
+            <div class="browser-bar">
+              <div class="browser-dots">
+                <span class="browser-dot dot-close"></span>
+                <span class="browser-dot dot-min"></span>
+                <span class="browser-dot dot-max"></span>
+              </div>
+              <div class="browser-address">rivka-lapid.vercel.app</div>
+            </div>
+            <div class="browser-content">
+              <!-- Simulated Editorial Hero -->
+              <div class="editorial-hero-mock">
+                <span class="editorial-logo">רבקה לפיד</span>
+                <h3 class="editorial-title">נומרולוגיה, טיפול וחיבור עצמי</h3>
+                <div class="editorial-video-player">
+                  <div class="video-overlay-play">▶</div>
+                  <div class="video-bg-waves">
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Simulated Media Grid -->
+              <div class="media-hub-grid">
+                <div class="hub-card-mock">
+                  <span class="hub-badge">🎙️ פודקאסט</span>
+                  <div class="hub-title">פרק 12: המספרים שמכוונים את דרכנו בחיים</div>
+                  <div class="hub-footer">
+                    <span>45 דקות</span>
+                    <span class="spotify-logo">Spotify</span>
+                  </div>
+                </div>
+                <div class="hub-card-mock">
+                  <span class="hub-badge">📝 מאמר</span>
+                  <div class="hub-title">כיצד תאריך הלידה משקף את העיסוק המקצועי שלך?</div>
+                  <div class="hub-footer">
+                    <span>6 דק' קריאה</span>
+                    <span>קראי עוד ➔</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section B: Booking Flow -->
+    <section id="booking-flow" class="showcase-section">
+      <div class="section-header">
+        <span class="section-badge">אינטראקטיבי</span>
+        <h2 class="section-title">מערכת זימון פגישות עצמית</h2>
+      </div>
+
+      <div class="feature-layout reverse">
+        <div class="text-content">
+          <div class="feature-item-desc">
+            <h3>אשף זימון <em>חכם (Booking Wizard)</em></h3>
+            <p>
+              חוויית משתמש חלקה ב-3 שלבים המכוונת את הלקוחה לבחור את סוג המפגש המתאים (אבחון נומרולוגי, תהליך ממוקד או שיחת היכרות), לאתר תאריך ושעה נוחים מתוך זמנים פנויים ביומן, ולהזין את פרטי הקשר יחד עם תאריך הלידה לצורך הכנת המפה.
+            </p>
+          </div>
+          <div class="feature-item-desc">
+            <h3>ניהול שעות פעילות <em>וזמני מנוחה שבועיים</em></h3>
+            <p>
+              היומן מחשב באופן דינמי את שעות הפעילות שרבקה הגדירה. הוא מנטרל זמני הפסקות צהריים או חופשות מובנות, ומאפשר ללקוחה לראות זמנים זמינים בלבד כדי למנוע כפילויות או אי הבנות.
+            </p>
+          </div>
+        </div>
+
+        <div class="visual-content">
+          <!-- Visual representation: browser with interactive Booking flow -->
+          <div class="mock-browser">
+            <div class="browser-bar">
+              <div class="browser-dots">
+                <span class="browser-dot dot-close"></span>
+                <span class="browser-dot dot-min"></span>
+                <span class="browser-dot dot-max"></span>
+              </div>
+              <div class="browser-address">rivka-lapid.vercel.app/book</div>
+            </div>
+            <div class="browser-content">
+              <div class="booking-mock">
+                <div class="booking-header">
+                  <span>בחרי מועד לפגישה</span>
+                  <div class="booking-progress">
+                    <span class="progress-step">1</span>
+                    <span class="progress-step active">2</span>
+                    <span class="progress-step">3</span>
+                  </div>
+                </div>
+                
+                <!-- Selected service row -->
+                <div class="service-card-mock">
+                  <div>
+                    <div class="service-title-mock">🔮 אבחון נומרולוגי אישי</div>
+                    <div style="font-size: 8px; color: var(--text-muted);">מפגש מעמיק של שעה וחצי בקליניקה</div>
+                  </div>
+                  <span class="service-price-mock">₪550</span>
+                </div>
+
+                <!-- Calendar layout -->
+                <div class="calendar-widget-mock">
+                  <div class="calendar-month-mock">יוני 2026</div>
+                  <div class="calendar-days-mock">
+                    <span>א</span><span>ב</span><span>ג</span><span>ד</span><span>ה</span><span>ו</span>
+                    <span class="day-mock">14</span>
+                    <span class="day-mock enabled">15</span>
+                    <span class="day-mock enabled">16</span>
+                    <span class="day-mock enabled">17</span>
+                    <span class="day-mock enabled">18</span>
+                    <span class="day-mock">19</span>
+                    <span class="day-mock">20</span>
+                    <span class="day-mock enabled selected">21</span>
+                    <span class="day-mock enabled">22</span>
+                    <span class="day-mock enabled">23</span>
+                    <span class="day-mock enabled">24</span>
+                    <span class="day-mock">25</span>
+                  </div>
+                  
+                  <div style="font-size: 8px; font-weight: bold; margin-top: 8px;">שעות פנויות ליום ראשון 21 ביוני:</div>
+                  <div class="time-slots-mock">
+                    <span class="time-slot-mock active">09:00</span>
+                    <span class="time-slot-mock">10:30</span>
+                    <span class="time-slot-mock break">12:00</span>
+                    <span class="time-slot-mock">13:30</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section C: Client Portal -->
+    <section id="client-portal" class="showcase-section">
+      <div class="section-header">
+        <span class="section-badge new">חדש בגרסה 2.0</span>
+        <h2 class="section-title">מרחב אישי ומאובטח למטופל (Client Portal)</h2>
+      </div>
+
+      <div class="feature-layout">
+        <div class="text-content">
+          <div class="feature-item-desc">
+            <h3>התחברות <em>Google ואבטחת מידע קפדנית</em></h3>
+            <p>
+              הלקוחה מתחברת למרחב האישי בצורה מאובטחת ומהירה באמצעות חשבון הגוגל שלה. בעזרת הגדרות Row Level Security (RLS) ברמת בסיס הנתונים (Supabase), קיים מידור מלא של המידע. אף משתמש אחר אינו יכול לגשת ליומנים, למשימות או למפה הנומרולוגית שלה.
+            </p>
+          </div>
+          <div class="feature-item-desc">
+            <h3>מפה נומרולוגית <em>ויומן מסע שיתופי</em></h3>
+            <p>
+              במרחב האישי המטופלת נחשפת למספרים האישיים שלה (גורל, יום לידה, שנה אישית) שחושבו והוזנו ע"י רבקה. בנוסף, היא יכולה לכתוב ביומן מסע אישי המשקף את הרגשותיה בין המפגשים. היא יכולה לבחור לשתף את היומן עם רבקה כדי להכין אותה למפגש הבא.
+            </p>
+          </div>
+          <div class="feature-item-desc">
+            <h3>משימות בית <em>ומדדי התקדמות (Homework checklist)</em></h3>
+            <p>
+              רבקה יכולה להקצות משימות ותרגילים אישיים ללקוחה ישירות מלוח הניהול. המטופלת מסמנת וי (V) על משימות שביצעה, ועוקבת אחר גרף ההתקדמות השבועי שלה בעיצוב נעים ומניע לפעולה.
+            </p>
+          </div>
+        </div>
+
+        <div class="visual-content">
+          <!-- Visual representation: phone showing the Client Portal app interface -->
+          <div class="mock-phone">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="phone-header">
+                <span>12:45</span>
+                <span>📶 🔋</span>
+              </div>
+              <div class="phone-content">
+                <div class="portal-mock">
+                  <!-- Nav -->
+                  <div class="portal-nav">
+                    <div class="portal-user">
+                      <div class="user-avatar">יכ</div>
+                      <div>
+                        <div class="user-name">יעל כהן</div>
+                        <div style="font-size: 8px; opacity:0.8;">מטופלת</div>
+                      </div>
+                    </div>
+                    <div class="google-signin-badge">
+                      <span class="google-logo-icon">G</span>
+                      <span>מחובר</span>
+                    </div>
+                  </div>
+
+                  <!-- Dashboard body -->
+                  <div class="portal-dashboard">
+                    <!-- Numerology Map -->
+                    <div style="font-size: 9px; font-weight: bold; color: var(--text-color);">המפה הנומרולוגית שלך:</div>
+                    <div class="numerology-map-mock">
+                      <div class="num-card">
+                        <span class="num-val">7</span>
+                        <span class="num-label">גורל</span>
+                      </div>
+                      <div class="num-card">
+                        <span class="num-val">3</span>
+                        <span class="num-label">יום לידה</span>
+                      </div>
+                      <div class="num-card">
+                        <span class="num-val">9</span>
+                        <span class="num-label">שנה אישית</span>
+                      </div>
+                    </div>
+
+                    <!-- Journey Journal -->
+                    <div class="journal-widget-mock">
+                      <div class="journal-header">
+                        <span class="journal-title">✏️ כתיבה ביומן המסע</span>
+                        <span style="font-size: 8px; color: var(--success-color);">שיתוף עם רבקה: פעיל</span>
+                      </div>
+                      <textarea class="journal-input" placeholder="איך את מרגישה היום? רבקה תראה את זה לפני המפגש הבא..."></textarea>
+                      <button class="journal-btn">שמירה ושיתוף ביומן</button>
+                    </div>
+
+                    <!-- Tasks Checklist -->
+                    <div class="tasks-widget-mock">
+                      <div class="journal-header">
+                        <span class="journal-title">📌 תרגול ומשימות לבית</span>
+                        <span style="font-size: 8px; font-weight: bold; color: var(--success-color);">66% הושלם</span>
+                      </div>
+                      <div class="tasks-progress-bar">
+                        <div class="tasks-progress-fill"></div>
+                      </div>
+                      <div class="task-item-mock">
+                        <span>תרגול נשימות בוקר (5 דקות)</span>
+                        <span class="task-status-circle checked"></span>
+                      </div>
+                      <div class="task-item-mock">
+                        <span>כתיבת 3 דברים שאני מוקירה עליהם תודה</span>
+                        <span class="task-status-circle checked"></span>
+                      </div>
+                      <div class="task-item-mock">
+                        <span>קריאת המאמר המומלץ על שנה אישית 9</span>
+                        <span class="task-status-circle"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section D: Admin Dashboard & CRM -->
+    <section id="admin-dashboard" class="showcase-section">
+      <div class="section-header">
+        <span class="section-badge new">חדש בגרסה 2.0</span>
+        <h2 class="section-title">לוח בקרה מתקדם ומערכת CRM (למטפלת)</h2>
+      </div>
+
+      <div class="feature-layout reverse">
+        <div class="text-content">
+          <div class="feature-item-desc">
+            <h3>מסר AI יומי <em>מבוסס יומן (Gemini Zen)</em></h3>
+            <p>
+              עם כניסתה ללוח הבקרה בכל בוקר, רבקה מקבלת מסר השראה ומיקוד טיפולי המופק דינמית ע"י AI (מודל Gemini). המסר מבוסס על שמות ותאריכי הלידה של המטופלים המגיעים אליה באותו יום, ומספק לה השראה ממוקדת ואנרגיה מותאמת אישית לניהול יומן הפגישות.
+            </p>
+          </div>
+          <div class="feature-item-desc">
+            <h3>סנכרון דו-כיווני <em>ל-Google Calendar</em></h3>
+            <p>
+              חיבור ישיר של מערכת זימון התורים לקליניקה אל יומן הגוגל האישי של רבקה. כאשר לקוחה קובעת פגישה באתר, היא מתווספת מיידית ליומן האישי שלה. אם רבקה מעדכנת או מוחקת פגישה ביומן גוגל, השינוי מסתנכרן אוטומטית בחזרה למאגר המידע של האתר כדי לפנות את השעה מחדש.
+            </p>
+          </div>
+          <div class="feature-item-desc">
+            <h3>חיבור ל-Sumit <em>והפקת קבלות אוטומטית</em></h3>
+            <p>
+              סגירת מעגל הטיפול והתשלום בלחיצת כפתור אחת. רבקה יכולה להגדיר שמפגש שולם (ב-Bit, Paybox, מזומן או העברה). המערכת פונה עצמאית ל-API של Sumit, מפיקה חשבונית מס קבלה רשמית, שולחת אותה למייל של הלקוחה, ושומרת עותק PDF במרחב האישי של המטופלת לצפייה והורדה.
+            </p>
+          </div>
+        </div>
+
+        <div class="visual-content">
+          <!-- Visual representation: browser showing Admin area, Google/Sumit sync flows, and CRM -->
+          <div class="mock-browser">
+            <div class="browser-bar">
+              <div class="browser-dots">
+                <span class="browser-dot dot-close"></span>
+                <span class="browser-dot dot-min"></span>
+                <span class="browser-dot dot-max"></span>
+              </div>
+              <div class="browser-address">rivka-lapid.vercel.app/admin</div>
+            </div>
+            <div class="browser-content">
+              <div class="admin-mock">
+                <!-- Sidebar header simulated -->
+                <div class="admin-sidebar">
+                  <span class="admin-logo">לוח ניהול הקליניקה — רבקה לפיד</span>
+                  <span style="font-size: 9px; background: rgba(255,255,255,0.15); padding: 2px 6px; border-radius: 4px;">רבקה לפיד מחוברת</span>
+                </div>
+
+                <!-- Admin Dashboard Body -->
+                <div class="admin-dashboard-layout">
+                  <!-- AI Zen Message -->
+                  <div class="ai-zen-card">
+                    <span class="ai-badge">GEMINI 1.5 PRO</span>
+                    <div class="ai-title">✨ מסר השראה ומיקוד יומי:</div>
+                    <div class="ai-quote">
+                      "רבקה, היום את פוגשת את יעל כהן (גורל 7). המספר 7 מסמל השראה וחקירה פנימית. המפגש של היום ידרוש ממך להחזיק מרחב של שקט והקשבה עמוקה שבין המילים שלה. תני לה זמן לעכל."
+                    </div>
+                  </div>
+
+                  <!-- Google Sync widget -->
+                  <div class="sync-timeline-mock">
+                    <div style="font-size: 9px; font-weight: bold; margin-bottom: 5px;">סנכרון יומנים פעיל:</div>
+                    <div class="sync-flow">
+                      <div class="sync-node google">Google Calendar</div>
+                      <span class="sync-arrow">⇆</span>
+                      <div class="sync-node supabase">Supabase DB</div>
+                    </div>
+                    <div style="font-size: 8px; text-align: center; color: var(--success-color);">
+                      ● סונכרן לאחרונה: לפני 2 דקות (מצב תקין)
+                    </div>
+                  </div>
+
+                  <!-- Invoicing & Billing table -->
+                  <div class="invoicing-table-mock">
+                    <div style="font-size: 9px; font-weight: bold; margin-bottom: 5px;">הפקת קבלות דיגיטליות (Sumit Integration):</div>
+                    <div class="invoice-row header">
+                      <span>לקוח</span>
+                      <span>טיפול</span>
+                      <span>סטטוס</span>
+                      <span>קבלה</span>
+                    </div>
+                    <div class="invoice-row">
+                      <span>יעל כהן</span>
+                      <span>אבחון נומרולוגי</span>
+                      <span class="invoice-status-badge paid">שולם</span>
+                      <span style="color: var(--accent-color); cursor:pointer;">📥 הורד PDF</span>
+                    </div>
+                    <div class="invoice-row">
+                      <span>רוני לוי</span>
+                      <span>שיחת היכרות</span>
+                      <span class="invoice-status-badge pending">בטיפול</span>
+                      <span style="color: var(--text-muted); opacity: 0.6;">הפק קבלה ➔</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <em>"הקשבה אמיתית אינה רק לאוזניים, היא נוכחות של הלב במרחב שבין המספרים למילים."</em>
+      <p>© 2026 קליניקת רבקה לפיד. כל הזכויות שמורות.</p>
+    </footer>
+  </div>
+
+</body>
+</html>

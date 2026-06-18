@@ -37,7 +37,14 @@ const App: React.FC = () => {
   const [greeting, setGreeting] = useState("אם הגעת לכאן, כנראה שמשהו בתוכך מבקש שינוי - אולי זה חסמים רגשיים, חוסר ביטחון עצמי, קושי למציאת זוגיות, תקיעות במערכות יחסים או שהנך נמצא/ת בצומת דרכים בחיים והנך מחפש/ת כיוון.");
   const [scrolled, setScrolled] = useState(false);
   const [adminPassword, setAdminPassword] = useState("");
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
+    return sessionStorage.getItem('isAdminAuthenticated') === 'true';
+  });
+  
+  useEffect(() => {
+    sessionStorage.setItem('isAdminAuthenticated', isAdminAuthenticated ? 'true' : 'false');
+  }, [isAdminAuthenticated]);
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
@@ -499,6 +506,7 @@ const App: React.FC = () => {
             <button onClick={() => setView('home')} className={`hover:text-[#7d7463] transition-colors duration-300 ${view === 'home' ? 'text-[#7d7463]' : ''}`}>בית</button>
             <button onClick={() => setView('booking')} className={`hover:text-[#7d7463] transition-colors duration-300 ${view === 'booking' ? 'text-[#7d7463]' : ''}`}>מפגשים</button>
             <button onClick={() => setView('content')} className={`hover:text-[#7d7463] transition-colors duration-300 ${view === 'content' ? 'text-[#7d7463]' : ''}`}>תוכן והשראה</button>
+            <button onClick={() => setView('portal')} className={`hover:text-[#7d7463] transition-colors duration-300 ${view === 'portal' ? 'text-[#7d7463]' : ''}`}>אזור אישי</button>
             <button onClick={() => setView('admin')} className={`hover:text-[#7d7463] transition-colors duration-300 ${view === 'admin' ? 'text-[#7d7463]' : ''}`}>ניהול</button>
           </div>
 
@@ -541,6 +549,12 @@ const App: React.FC = () => {
                 className={`text-sm uppercase tracking-widest font-bold ${view === 'content' ? 'text-[#7d7463]' : 'text-[#2d2a26]'}`}
               >
                 תוכן והשראה
+              </button>
+              <button
+                onClick={() => { setView('portal'); setIsMobileMenuOpen(false); }}
+                className={`text-sm uppercase tracking-widest font-bold ${view === 'portal' ? 'text-[#7d7463]' : 'text-[#2d2a26]'}`}
+              >
+                אזור אישי
               </button>
               <button
                 onClick={() => { setView('admin'); setIsMobileMenuOpen(false); }}

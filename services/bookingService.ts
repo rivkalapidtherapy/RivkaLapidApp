@@ -1,4 +1,4 @@
-import { Appointment, ServiceType, ClinicStats, Service, GalleryItem, DailyHours, MessageTemplates, NumerologyInsights, JourneyNote, BookingItem, ContentItem } from "../types";
+import { Appointment, ServiceType, ClinicStats, Service, GalleryItem, DailyHours, MessageTemplates, NumerologyInsights, JourneyNote, BookingItem, ContentItem, NumerologyProfile, ClientReflection, ClientTask, ClientSavedContent, ClientRecommendedContent } from "../types";
 import { WORK_HOURS as INITIAL_HOURS, SERVICES as INITIAL_SERVICES } from "../constants";
 import { supabase } from "../lib/supabase";
 
@@ -207,7 +207,8 @@ export const getAppointments = async (): Promise<Appointment[]> => {
         sumitDocumentId: d.sumit_document_id,
         sumitPdfUrl: d.sumit_pdf_url,
         sessionNotes: d.session_notes,
-        items: d.items || []
+        items: d.items || [],
+        googleEventId: d.google_event_id
       }));
     }
   }
@@ -229,7 +230,8 @@ export const addAppointment = async (app: Omit<Appointment, 'id' | 'createdAt' |
       sumit_document_id: app.sumitDocumentId || null,
       sumit_pdf_url: app.sumitPdfUrl || null,
       session_notes: app.sessionNotes || '',
-      items: app.items || []
+      items: app.items || [],
+      google_event_id: app.googleEventId || null
     }]).select().single();
 
     if (!error && data) {
@@ -248,7 +250,8 @@ export const addAppointment = async (app: Omit<Appointment, 'id' | 'createdAt' |
         sumitDocumentId: data.sumit_document_id,
         sumitPdfUrl: data.sumit_pdf_url,
         sessionNotes: data.session_notes,
-        items: data.items || []
+        items: data.items || [],
+        googleEventId: data.google_event_id
       };
     }
   }
@@ -262,7 +265,8 @@ export const addAppointment = async (app: Omit<Appointment, 'id' | 'createdAt' |
     sumitDocumentId: app.sumitDocumentId || null,
     sumitPdfUrl: app.sumitPdfUrl || null,
     sessionNotes: app.sessionNotes || '',
-    items: app.items || []
+    items: app.items || [],
+    googleEventId: app.googleEventId || undefined
   };
   appointments.push(newApp as Appointment);
   return newApp as Appointment;
@@ -291,6 +295,7 @@ export const updateAppointment = async (id: string, data: Partial<Appointment>):
     if (data.sumitPdfUrl !== undefined) updateData.sumit_pdf_url = data.sumitPdfUrl;
     if (data.sessionNotes !== undefined) updateData.session_notes = data.sessionNotes;
     if (data.items !== undefined) updateData.items = data.items;
+    if (data.googleEventId !== undefined) updateData.google_event_id = data.googleEventId;
 
     await supabase.from('appointments').update(updateData).eq('id', id);
   }
@@ -837,4 +842,340 @@ export const loadDemoData = async (): Promise<{ success: boolean; error?: string
     return { success: false, error: err.message || "Unknown error" };
   }
 };
+
+// ==========================================
+// CLIENT PORTAL & PERSONAL AREA QUERIES
+// ==========================================
+
+export const getNumerologyProfile = async (email: string): Promise<NumerologyProfile | null> => {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('numerology_profiles')
+      .select('*')
+      .eq('client_email', email)
+      .maybeSingle();
+    if (error) {
+      console.error("Error fetching numerology profile:", error);
+      return null;
+    }
+    if (data) {
+      return {
+        id: data.id,
+        clientEmail: data.client_email,
+        birthDate: data.birth_date,
+        destinyNumber: data.destiny_number,
+        dayNumber: data.day_number,
+        personalYear: data.personal_year,
+        readingContent: data.reading_content,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+    }
+  }
+  return null;
+};
+
+export const saveNumerologyProfile = async (profile: Omit<NumerologyProfile, 'id'>): Promise<void> => {
+  if (supabase) {
+    const { error } = await supabase
+      .from('numerology_profiles')
+      .upsert({
+        client_email: profile.clientEmail,
+        birth_date: profile.birthDate,
+        destiny_number: profile.destinyNumber,
+        day_number: profile.dayNumber,
+        personal_year: profile.personalYear,
+        reading_content: profile.readingContent,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'client_email' });
+    if (error) {
+      console.error("Error saving numerology profile:", error);
+      throw error;
+    }
+  }
+};
+
+export const getClientReflections = async (email: string): Promise<ClientReflection[]> => {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('client_reflections')
+      .select('*')
+      .eq('client_email', email)
+      .order('created_at', { ascending: false });
+    if (!error && data) {
+      return data.map(d => ({
+        id: d.id,
+        clientEmail: d.client_email,
+        title: d.title,
+        content: d.content,
+        shareWithTherapist: d.share_with_therapist,
+        createdAt: d.created_at,
+        updatedAt: d.updated_at
+      }));
+    }
+  }
+  return [];
+};
+
+export const addClientReflection = async (reflection: Omit<ClientReflection, 'id' | 'createdAt'>): Promise<ClientReflection | null> => {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('client_reflections')
+      .insert([{
+        client_email: reflection.clientEmail,
+        title: reflection.title,
+        content: reflection.content,
+        share_with_therapist: reflection.shareWithTherapist
+      }])
+      .select()
+      .single();
+    if (!error && data) {
+      return {
+        id: data.id,
+        clientEmail: data.client_email,
+        title: data.title,
+        content: data.content,
+        shareWithTherapist: data.share_with_therapist,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+    }
+    console.error("Error adding reflection:", error);
+  }
+  return null;
+};
+
+export const updateClientReflectionShared = async (id: string, share: boolean): Promise<void> => {
+  if (supabase) {
+    const { error } = await supabase
+      .from('client_reflections')
+      .update({ share_with_therapist: share, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (error) {
+      console.error("Error updating reflection share status:", error);
+    }
+  }
+};
+
+export const deleteClientReflection = async (id: string): Promise<void> => {
+  if (supabase) {
+    const { error } = await supabase
+      .from('client_reflections')
+      .delete()
+      .eq('id', id);
+    if (error) {
+      console.error("Error deleting reflection:", error);
+    }
+  }
+};
+
+export const getSharedReflectionsForAdmin = async (email: string): Promise<ClientReflection[]> => {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('client_reflections')
+      .select('*')
+      .eq('client_email', email)
+      .eq('share_with_therapist', true)
+      .order('created_at', { ascending: false });
+    if (!error && data) {
+      return data.map(d => ({
+        id: d.id,
+        clientEmail: d.client_email,
+        title: d.title,
+        content: d.content,
+        shareWithTherapist: d.share_with_therapist,
+        createdAt: d.created_at,
+        updatedAt: d.updated_at
+      }));
+    }
+  }
+  return [];
+};
+
+export const getClientTasks = async (email: string): Promise<ClientTask[]> => {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('client_tasks')
+      .select('*')
+      .eq('client_email', email)
+      .order('created_at', { ascending: false });
+    if (!error && data) {
+      return data.map(d => ({
+        id: d.id,
+        clientEmail: d.client_email,
+        title: d.title,
+        description: d.description,
+        dueDate: d.due_date,
+        isCompleted: d.is_completed,
+        completedAt: d.completed_at,
+        createdAt: d.created_at
+      }));
+    }
+  }
+  return [];
+};
+
+export const addClientTask = async (task: Omit<ClientTask, 'id' | 'createdAt' | 'isCompleted' | 'completedAt'>): Promise<ClientTask | null> => {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('client_tasks')
+      .insert([{
+        client_email: task.clientEmail,
+        title: task.title,
+        description: task.description,
+        due_date: task.dueDate,
+        is_completed: false
+      }])
+      .select()
+      .single();
+    if (!error && data) {
+      return {
+        id: data.id,
+        clientEmail: data.client_email,
+        title: data.title,
+        description: data.description,
+        dueDate: data.due_date,
+        isCompleted: data.is_completed,
+        completedAt: data.completed_at,
+        createdAt: data.created_at
+      };
+    }
+    console.error("Error adding client task:", error);
+  }
+  return null;
+};
+
+export const updateClientTaskStatus = async (id: string, isCompleted: boolean): Promise<void> => {
+  if (supabase) {
+    const { error } = await supabase
+      .from('client_tasks')
+      .update({
+        is_completed: isCompleted,
+        completed_at: isCompleted ? new Date().toISOString() : null
+      })
+      .eq('id', id);
+    if (error) {
+      console.error("Error updating task status:", error);
+    }
+  }
+};
+
+export const deleteClientTask = async (id: string): Promise<void> => {
+  if (supabase) {
+    const { error } = await supabase
+      .from('client_tasks')
+      .delete()
+      .eq('id', id);
+    if (error) {
+      console.error("Error deleting client task:", error);
+    }
+  }
+};
+
+export const getClientSavedContent = async (email: string): Promise<ContentItem[]> => {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('client_saved_content')
+      .select('content_id, content_hub(*)')
+      .eq('client_email', email);
+    if (!error && data) {
+      return data
+        .filter((d: any) => d.content_hub)
+        .map((d: any) => ({
+          id: d.content_hub.id,
+          title: d.content_hub.title,
+          type: d.content_hub.type,
+          mediaUrl: d.content_hub.media_url,
+          embedCode: d.content_hub.embed_code,
+          description: d.content_hub.description,
+          summary: d.content_hub.summary,
+          publicationDate: d.content_hub.publication_date,
+          createdAt: d.content_hub.created_at
+        }));
+    }
+  }
+  return [];
+};
+
+export const saveContentForClient = async (email: string, contentId: string): Promise<void> => {
+  if (supabase) {
+    const { error } = await supabase
+      .from('client_saved_content')
+      .insert([{ client_email: email, content_id: contentId }]);
+    if (error) {
+      console.error("Error saving content for client:", error);
+    }
+  }
+};
+
+export const unsaveContentForClient = async (email: string, contentId: string): Promise<void> => {
+  if (supabase) {
+    const { error } = await supabase
+      .from('client_saved_content')
+      .delete()
+      .eq('client_email', email)
+      .eq('content_id', contentId);
+    if (error) {
+      console.error("Error unsaving content for client:", error);
+    }
+  }
+};
+
+export const getClientRecommendedContent = async (email: string): Promise<{ content: ContentItem, note?: string }[]> => {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('client_recommended_content')
+      .select('recommendation_note, content_hub(*)')
+      .eq('client_email', email);
+    if (!error && data) {
+      return data
+        .filter((d: any) => d.content_hub)
+        .map((d: any) => ({
+          note: d.recommendation_note,
+          content: {
+            id: d.content_hub.id,
+            title: d.content_hub.title,
+            type: d.content_hub.type,
+            mediaUrl: d.content_hub.media_url,
+            embedCode: d.content_hub.embed_code,
+            description: d.content_hub.description,
+            summary: d.content_hub.summary,
+            publicationDate: d.content_hub.publication_date,
+            createdAt: d.content_hub.created_at
+          }
+        }));
+    }
+  }
+  return [];
+};
+
+export const recommendContentForClient = async (email: string, contentId: string, note?: string): Promise<void> => {
+  if (supabase) {
+    const { error } = await supabase
+      .from('client_recommended_content')
+      .upsert({
+        client_email: email,
+        content_id: contentId,
+        recommendation_note: note,
+        created_at: new Date().toISOString()
+      }, { onConflict: 'client_email,content_id' });
+    if (error) {
+      console.error("Error recommending content:", error);
+    }
+  }
+};
+
+export const removeRecommendationForClient = async (email: string, contentId: string): Promise<void> => {
+  if (supabase) {
+    const { error } = await supabase
+      .from('client_recommended_content')
+      .delete()
+      .eq('client_email', email)
+      .eq('content_id', contentId);
+    if (error) {
+      console.error("Error removing recommended content:", error);
+    }
+  }
+};
+
 
