@@ -84,6 +84,7 @@ export interface HomepageContent {
   heroSubtitle: string;
   heroQuote: string;
   heroImageUrl: string;
+  heroVideoUrl: string;
   
   painPointsBadge: string;
   painPointsTitle: string;

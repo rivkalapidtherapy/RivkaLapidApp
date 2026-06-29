@@ -12,9 +12,11 @@ export const AdminHomepageTab: React.FC = () => {
   const [activeSection, setActiveSection] = useState<'logo' | 'hero' | 'pain' | 'about'>('logo');
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-  // Image upload states
+  // Image & Video upload states
   const [heroFile, setHeroFile] = useState<File | null>(null);
   const [heroPreview, setHeroPreview] = useState<string>('');
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string>('');
   const [aboutFile, setAboutFile] = useState<File | null>(null);
   const [aboutPreview, setAboutPreview] = useState<string>('');
 
@@ -27,6 +29,7 @@ export const AdminHomepageTab: React.FC = () => {
     const data = await getHomepageContent();
     setContent(data);
     if (data.heroImageUrl) setHeroPreview(data.heroImageUrl);
+    if (data.heroVideoUrl) setVideoPreview(data.heroVideoUrl);
     if (data.aboutImageUrl) setAboutPreview(data.aboutImageUrl);
     setLoading(false);
   };
@@ -66,7 +69,17 @@ export const AdminHomepageTab: React.FC = () => {
         }
       }
 
-      // 2. Upload About Image if changed
+      // 2. Upload Hero Video if changed
+      if (videoFile) {
+        const url = await uploadImage(videoFile);
+        if (url) {
+          updatedContent.heroVideoUrl = url;
+        } else {
+          throw new Error('העלאת סרטון תדמית נכשלה');
+        }
+      }
+
+      // 3. Upload About Image if changed
       if (aboutFile) {
         const url = await uploadImage(aboutFile);
         if (url) {
@@ -76,10 +89,11 @@ export const AdminHomepageTab: React.FC = () => {
         }
       }
 
-      // 3. Save to DB
+      // 4. Save to DB
       await saveHomepageContent(updatedContent);
       setContent(updatedContent);
       setHeroFile(null);
+      setVideoFile(null);
       setAboutFile(null);
       setNotification({ message: 'תוכן דף הבית עודכן בהצלחה!', type: 'success' });
     } catch (err: any) {
@@ -269,7 +283,7 @@ export const AdminHomepageTab: React.FC = () => {
 
                 {/* Hero Image Upload */}
                 <div className="space-y-3">
-                  <label className="text-xs font-bold text-stone-500 block">תמונת כותרת ראשית / תדמית</label>
+                  <label className="text-xs font-bold text-stone-500 block">תמונת רקע / תצוגה מקדימה לסרטון</label>
                   <div className="flex flex-col md:flex-row items-center gap-6 bg-stone-50 p-4 rounded-xl border border-stone-100">
                     {heroPreview && (
                       <img
@@ -295,8 +309,42 @@ export const AdminHomepageTab: React.FC = () => {
                           }}
                         />
                       </label>
-                      <p className="text-[10px] text-stone-400">תמונות יישמרו ישירות בשרת. מומלץ להעלות קובץ ברוחב 800px לפחות.</p>
+                      <p className="text-[10px] text-stone-400">תמונה זו תשמש ככיסוי (Poster) לסרטון התדמית.</p>
                       {heroFile && <p className="text-xs text-emerald-600 font-bold">תמונה נבחרה: {heroFile.name}</p>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Hero Video Upload */}
+                <div className="space-y-3">
+                  <label className="text-xs font-bold text-stone-500 block">סרטון תדמית ראשי</label>
+                  <div className="flex flex-col md:flex-row items-center gap-6 bg-stone-50 p-4 rounded-xl border border-stone-100">
+                    {videoPreview && (
+                      <video
+                        src={videoPreview}
+                        className="w-40 h-24 object-cover rounded-lg border border-stone-200 shadow-sm"
+                        controls
+                      />
+                    )}
+                    <div className="flex-1 flex flex-col gap-2">
+                      <label className="flex items-center justify-center gap-2 px-5 py-2.5 border border-[#7d7463] text-[#7d7463] hover:bg-[#7d7463] hover:text-white rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer shadow-sm w-fit">
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>בחירת סרטון חדש</span>
+                        <input
+                          type="file"
+                          accept="video/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setVideoFile(file);
+                              setVideoPreview(URL.createObjectURL(file));
+                            }
+                          }}
+                        />
+                      </label>
+                      <p className="text-[10px] text-stone-400">קבצי וידאו בלבד. הסרטון ינוגן ישירות במסך הבית של האתר.</p>
+                      {videoFile && <p className="text-xs text-emerald-600 font-bold">סרטון נבחר: {videoFile.name}</p>}
                     </div>
                   </div>
                 </div>

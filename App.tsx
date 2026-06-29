@@ -174,26 +174,38 @@ const App: React.FC = () => {
                 </div>
               </motion.div>
 
-              {/* Right Media Side - DESKTOP (Promotional Video Placeholder) */}
+              {/* Right Media Side - DESKTOP (Promotional Video Player / Placeholder) */}
               <motion.div
                 initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
                 className="hidden lg:flex flex-1 relative items-center justify-center bg-[#f5f2ed] border-r border-[#2d2a26]/5 px-12"
               >
-                <div className="relative w-full max-w-xl aspect-video rounded-sm overflow-hidden shadow-2xl group cursor-pointer bg-stone-900">
-                  <img
-                    src={homepageContent.heroImageUrl}
-                    alt={`סרטון תדמית ${homepageContent.aboutImageLabel}`}
-                    className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-all duration-[2s]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white space-y-4">
-                    <div className="w-16 h-16 bg-white/20 hover:bg-white/35 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 border border-white/40 scale-100 group-hover:scale-110 shadow-lg shadow-black/20">
-                      <span className="text-2xl mr-1">▶</span>
+                <div className="relative w-full max-w-xl aspect-video rounded-sm overflow-hidden shadow-2xl bg-stone-900">
+                  {homepageContent.heroVideoUrl ? (
+                    <video
+                      src={homepageContent.heroVideoUrl}
+                      className="w-full h-full object-cover"
+                      controls
+                      poster={homepageContent.heroImageUrl}
+                      playsInline
+                    />
+                  ) : (
+                    <div className="relative w-full h-full">
+                      <img
+                        src={homepageContent.heroImageUrl}
+                        alt={`סרטון תדמית ${homepageContent.aboutImageLabel}`}
+                        className="w-full h-full object-cover opacity-60"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-white space-y-4">
+                        <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/40 shadow-lg shadow-black/20">
+                          <span className="text-2xl mr-1">▶</span>
+                        </div>
+                        <span className="text-xs uppercase tracking-[0.4em] font-bold opacity-80">סרטון תדמית - {homepageContent.aboutImageLabel}</span>
+                      </div>
                     </div>
-                    <span className="text-xs uppercase tracking-[0.4em] font-bold opacity-80 group-hover:opacity-100 transition-opacity">סרטון תדמית - {homepageContent.aboutImageLabel}</span>
-                  </div>
+                  )}
                 </div>
               </motion.div>
             </section>
@@ -207,19 +219,31 @@ const App: React.FC = () => {
                 transition={{ duration: 0.8 }}
                 className="max-w-lg mx-auto"
               >
-                <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-xl group cursor-pointer bg-stone-900">
-                  <img
-                    src={homepageContent.heroImageUrl}
-                    alt={`סרטון תדמית ${homepageContent.aboutImageLabel}`}
-                    className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-all duration-[2s]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white space-y-3">
-                    <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/40 shadow-lg shadow-black/20">
-                      <span className="text-xl mr-0.5">▶</span>
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-xl bg-stone-900">
+                  {homepageContent.heroVideoUrl ? (
+                    <video
+                      src={homepageContent.heroVideoUrl}
+                      className="w-full h-full object-cover"
+                      controls
+                      poster={homepageContent.heroImageUrl}
+                      playsInline
+                    />
+                  ) : (
+                    <div className="relative w-full h-full">
+                      <img
+                        src={homepageContent.heroImageUrl}
+                        alt={`סרטון תדמית ${homepageContent.aboutImageLabel}`}
+                        className="w-full h-full object-cover opacity-60"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-white space-y-3">
+                        <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/40 shadow-lg shadow-black/20">
+                          <span className="text-xl mr-0.5">▶</span>
+                        </div>
+                        <span className="text-[10px] uppercase tracking-[0.3em] font-bold opacity-80">סרטון תדמית - {homepageContent.aboutImageLabel}</span>
+                      </div>
                     </div>
-                    <span className="text-[10px] uppercase tracking-[0.3em] font-bold opacity-80">סרטון תדמית - {homepageContent.aboutImageLabel}</span>
-                  </div>
+                  )}
                 </div>
               </motion.div>
             </section>

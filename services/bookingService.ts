@@ -23,6 +23,7 @@ export const DEFAULT_HOMEPAGE_CONTENT: HomepageContent = {
   heroSubtitle: "מטפלת רגשית, נומרולוגית ומנחת סדנאות",
   heroQuote: "הקשבה אמיתית אינה רק לאוזניים, היא נוכחות של הלב במרחב שבין המספרים למילים.",
   heroImageUrl: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=800",
+  heroVideoUrl: "",
   
   painPointsBadge: "עצור לרגע להקשיב",
   painPointsTitle: "אם הגעת לכאן, יכול להיות שאת מרגישה ש...",
