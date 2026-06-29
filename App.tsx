@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AppView, Appointment } from './types';
+import { AppView, Appointment, HomepageContent } from './types';
 import BookingFlow from './components/BookingFlow';
 import AdminDashboard from './components/AdminDashboard';
 import ClientPortal from './components/ClientPortal';
@@ -9,7 +9,7 @@ import ContentHub from './components/ContentHub';
 import { getDailyGreeting } from './services/geminiService';
 import { Button } from './components/UI';
 import { SERVICES as INITIAL_SERVICES, COLORS } from './constants';
-import { getAdminServices } from './services/bookingService';
+import { getAdminServices, getHomepageContent, DEFAULT_HOMEPAGE_CONTENT } from './services/bookingService';
 import { Service } from './types';
 import { Instagram, Facebook } from 'lucide-react';
 
@@ -49,6 +49,7 @@ const App: React.FC = () => {
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
   const [portalPhone, setPortalPhone] = useState<string | null>(null);
+  const [homepageContent, setHomepageContent] = useState<HomepageContent>(DEFAULT_HOMEPAGE_CONTENT);
 
   // גלילה לראש הדף בכל החלפת תצוגה
   useEffect(() => {
@@ -58,6 +59,13 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
+
+    // Fetch homepage content
+    getHomepageContent().then(data => {
+      if (data) {
+        setHomepageContent(data);
+      }
+    });
 
     // Fetch real services from DB
     getAdminServices().then(data => {
@@ -106,7 +114,7 @@ const App: React.FC = () => {
                 {/* Mobile background image */}
                 <div className="lg:hidden absolute inset-0 z-[-1] overflow-hidden">
                   <img
-                    src="/rivka.png"
+                    src={homepageContent.aboutImageUrl}
                     alt=""
                     className="w-[120%] h-auto object-cover opacity-20 absolute -right-10 top-10"
                   />
@@ -121,15 +129,13 @@ const App: React.FC = () => {
                       transition={{ delay: 0.5 }}
                       className="text-xs uppercase tracking-[0.5em] text-[#7d7463] font-bold block"
                     >
-                      רבקה לפיד
+                      {homepageContent.aboutImageLabel}
                     </motion.span>
-                    <h1 className="text-5xl md:text-7xl font-light text-[#2d2a26] leading-[1.05] tracking-tight">
-                      תהליך ליווי <br />
-                      <span className="serif italic font-normal text-[#7d7463]">נומרולוגי רגשי</span> <br />
-                      אישי ומעצים
+                    <h1 className="text-4xl md:text-6xl font-light text-[#2d2a26] leading-tight tracking-tight whitespace-pre-line text-right">
+                      {homepageContent.heroTitle}
                     </h1>
                     <p className="text-[#2d2a26]/60 text-xs md:text-sm uppercase tracking-[0.3em] font-medium pt-2">
-                      מטפלת רגשית, נומרולוגית ומנחת סדנאות
+                      {homepageContent.heroSubtitle}
                     </p>
                   </div>
 
@@ -145,7 +151,7 @@ const App: React.FC = () => {
                       transition={{ delay: 1, duration: 1 }}
                       className="text-[#2d2a26] text-xl md:text-2xl font-light leading-relaxed serif italic text-right"
                     >
-                      "הקשבה אמיתית אינה רק לאוזניים, היא נוכחות של הלב במרחב שבין המספרים למילים."
+                      "{homepageContent.heroQuote}"
                     </motion.p>
                   </motion.div>
 
@@ -177,8 +183,8 @@ const App: React.FC = () => {
               >
                 <div className="relative w-full max-w-xl aspect-video rounded-sm overflow-hidden shadow-2xl group cursor-pointer bg-stone-900">
                   <img
-                    src="https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=800"
-                    alt="סרטון תדמית רבקה לפיד"
+                    src={homepageContent.heroImageUrl}
+                    alt={`סרטון תדמית ${homepageContent.aboutImageLabel}`}
                     className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-all duration-[2s]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
@@ -186,7 +192,7 @@ const App: React.FC = () => {
                     <div className="w-16 h-16 bg-white/20 hover:bg-white/35 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 border border-white/40 scale-100 group-hover:scale-110 shadow-lg shadow-black/20">
                       <span className="text-2xl mr-1">▶</span>
                     </div>
-                    <span className="text-xs uppercase tracking-[0.4em] font-bold opacity-80 group-hover:opacity-100 transition-opacity">סרטון תדמית - רבקה לפיד</span>
+                    <span className="text-xs uppercase tracking-[0.4em] font-bold opacity-80 group-hover:opacity-100 transition-opacity">סרטון תדמית - {homepageContent.aboutImageLabel}</span>
                   </div>
                 </div>
               </motion.div>
@@ -203,8 +209,8 @@ const App: React.FC = () => {
               >
                 <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-xl group cursor-pointer bg-stone-900">
                   <img
-                    src="https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=800"
-                    alt="סרטון תדמית רבקה לפיד"
+                    src={homepageContent.heroImageUrl}
+                    alt={`סרטון תדמית ${homepageContent.aboutImageLabel}`}
                     className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-all duration-[2s]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
@@ -212,7 +218,7 @@ const App: React.FC = () => {
                     <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/40 shadow-lg shadow-black/20">
                       <span className="text-xl mr-0.5">▶</span>
                     </div>
-                    <span className="text-[10px] uppercase tracking-[0.3em] font-bold opacity-80">סרטון תדמית - רבקה לפיד</span>
+                    <span className="text-[10px] uppercase tracking-[0.3em] font-bold opacity-80">סרטון תדמית - {homepageContent.aboutImageLabel}</span>
                   </div>
                 </div>
               </motion.div>
@@ -222,20 +228,20 @@ const App: React.FC = () => {
             <section className="py-28 px-6 md:px-16 bg-white border-b border-[#2d2a26]/5 text-right" dir="rtl">
               <div className="max-w-4xl mx-auto space-y-16">
                 <div className="space-y-4 text-center md:text-right">
-                  <span className="text-xs uppercase tracking-[0.4em] text-[#7d7463] font-bold block">עצור לרגע להקשיב</span>
+                  <span className="text-xs uppercase tracking-[0.4em] text-[#7d7463] font-bold block">{homepageContent.painPointsBadge}</span>
                   <h2 className="text-4xl md:text-5xl font-light text-[#2d2a26] leading-tight">
-                    אם הגעת לכאן, יכול להיות שאת מרגישה ש...
+                    {homepageContent.painPointsTitle}
                   </h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[
-                    "את נותנת לכולם, אבל שכחת את עצמך בדרך.",
-                    "את יודעת שיש בך הרבה יותר, אבל משהו עוצר אותך.",
-                    "את מרגישה תקיעות שחוזרת שוב ושוב בתחומים שונים בחייך.",
-                    "את מחפשת זוגיות, שפע, ביטחון עצמי או כיוון, אבל לא מצליחה לפרוץ את המעגלים שחוזרים על עצמם.",
-                    "את פשוט רוצה לחזור להרגיש שמחה, מחוברת ונינוחה בתוך החיים שלך."
-                  ].map((point, index) => (
+                    homepageContent.painPoint1,
+                    homepageContent.painPoint2,
+                    homepageContent.painPoint3,
+                    homepageContent.painPoint4,
+                    homepageContent.painPoint5
+                  ].filter(Boolean).map((point, index) => (
                     <motion.div
                       key={index}
                       initial={{ opacity: 0, y: 20 }}
@@ -258,7 +264,7 @@ const App: React.FC = () => {
                   className="text-center pt-8 border-t border-stone-100"
                 >
                   <p className="text-xl text-[#2d2a26]/80 font-light italic serif">
-                    "אם הזדהית אפילו עם אחד מהדברים האלו, את במקום הנכון."
+                    "{homepageContent.painPointsFooter}"
                   </p>
                 </motion.div>
               </div>
@@ -270,36 +276,40 @@ const App: React.FC = () => {
                 {/* Text Side */}
                 <div className="flex-1 space-y-8">
                   <div className="space-y-4">
-                    <span className="text-xs uppercase tracking-[0.4em] text-[#7d7463] font-bold block">הגישה הטיפולית</span>
+                    <span className="text-xs uppercase tracking-[0.4em] text-[#7d7463] font-bold block">{homepageContent.aboutBadge}</span>
                     <h2 className="text-4xl md:text-5xl font-light text-[#2d2a26] leading-tight serif italic">
-                      כאן מתחיל השינוי
+                      {homepageContent.aboutTitle}
                     </h2>
                   </div>
 
                   <div className="space-y-6 text-[#2d2a26]/80 text-base md:text-lg font-light leading-relaxed">
-                    <p>
-                      אני לא מאמינה בטיפול שמתמקד רק במה שרואים על פני השטח. ביחד, נגיע לשורש החסמים שמנהלים אותך, נבין מה מעכב אותך וניצור תנועה חדשה, מדויקת ומיטיבה יותר עבורך.
-                    </p>
-                    <p className="font-medium text-[#7d7463]">
-                      התהליך שאני מלווה בו משלב בין טיפול רגשי, עבודה עם תת המודע ונומרולוגיה – שילוב שמאפשר להבין את התמונה הרחבה ולהוביל לשינוי עמוק, מחובר ומעשי.
-                    </p>
+                    {homepageContent.aboutParagraph1 && (
+                      <p>{homepageContent.aboutParagraph1}</p>
+                    )}
+                    {homepageContent.aboutParagraph2 && (
+                      <p className="font-medium text-[#7d7463]">
+                        {homepageContent.aboutParagraph2}
+                      </p>
+                    )}
                     
                     {/* Highlighted UVP */}
-                    <div className="border-r-2 border-[#7d7463] pr-6 my-8 py-2 bg-white/40 rounded-sm">
-                      <p className="font-normal text-stone-800 italic">
-                        "מעבר לכלים הטיפוליים, אני מביאה איתי דרך הסתכלות ייחודית שפיתחתי לאורך למעלה מעשור כעורכת דין בכירה בתחום הנדל"ן, במסגרתו ליוויתי עסקאות מהגדולות והמובילות בצמרת המשק הישראלי."
-                      </p>
-                    </div>
+                    {homepageContent.aboutUvp && (
+                      <div className="border-r-2 border-[#7d7463] pr-6 my-8 py-2 bg-white/40 rounded-sm">
+                        <p className="font-normal text-stone-800 italic">
+                          "{homepageContent.aboutUvp}"
+                        </p>
+                      </div>
+                    )}
 
-                    <p>
-                      השנים הללו לימדו אותי מיומנויות שהפכו היום לחלק בלתי נפרד מהעשייה שלי: יכולת אבחון גבוהה, זיהוי דפוסים, הקשבה עמוקה, דיוק בפרטים, ניהול משא ומתן ויכולת לראות את התמונה הרחבה לצד הפרטים הקטנים.
-                    </p>
-                    <p>
-                      היום, אני משתמשת בכל אותן יכולות כדי לעזור לנשים לנהל את המשא ומתן החשוב ביותר בחייהן – זה שהן מנהלות מול עצמן.
-                    </p>
-                    <p>
-                      המטרה שלי היא שתצאי עם הרבה יותר מפתרון נקודתי, אלא עם בהירות, ביטחון וכלים פרקטים שעובדים באמת ושילוו אותך לאורך המסע שלך כאן בחיים.
-                    </p>
+                    {homepageContent.aboutParagraph3 && (
+                      <p>{homepageContent.aboutParagraph3}</p>
+                    )}
+                    {homepageContent.aboutParagraph4 && (
+                      <p>{homepageContent.aboutParagraph4}</p>
+                    )}
+                    {homepageContent.aboutParagraph5 && (
+                      <p>{homepageContent.aboutParagraph5}</p>
+                    )}
                   </div>
                 </div>
 
@@ -308,13 +318,13 @@ const App: React.FC = () => {
                   <div className="absolute inset-0 bg-[#7d7463]/5 rounded-sm blur-2xl transform rotate-6"></div>
                   <div className="relative border border-[#2d2a26]/10 p-4 bg-white rounded-sm shadow-xl max-w-sm">
                     <img
-                      src="/rivka.png"
-                      alt="רבקה לפיד"
+                      src={homepageContent.aboutImageUrl}
+                      alt={homepageContent.aboutImageLabel}
                       className="w-full h-auto object-cover rounded-sm grayscale hover:grayscale-0 transition-all duration-[1.5s]"
                     />
                     <div className="pt-4 text-center">
-                      <span className="text-[10px] uppercase tracking-[0.3em] text-[#7d7463] font-bold block mb-1">רבקה לפיד</span>
-                      <span className="text-xs text-stone-400 font-light">מטפלת רגשית ונומרולוגית</span>
+                      <span className="text-[10px] uppercase tracking-[0.3em] text-[#7d7463] font-bold block mb-1">{homepageContent.aboutImageLabel}</span>
+                      <span className="text-xs text-stone-400 font-light">{homepageContent.aboutImageSublabel}</span>
                     </div>
                   </div>
                 </div>
@@ -494,14 +504,14 @@ const App: React.FC = () => {
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 border border-[#2d2a26]/20 rounded-full flex items-center justify-center group-hover:border-[#7d7463] transition-colors duration-500">
                 <div className="w-8 h-8 bg-[#2d2a26]/5 rounded-full flex items-center justify-center text-[10px] text-[#2d2a26]/40 font-bold group-hover:bg-[#7d7463]/10 group-hover:text-[#7d7463]">
-                  RL
+                  {homepageContent.logoInitials}
                 </div>
               </div>
               <div className="flex flex-col">
                 <span className="text-xl tracking-tighter font-semibold group-hover:text-[#7d7463] transition-colors duration-500 uppercase leading-none text-[#2d2a26]">
-                  RIVKA<span className="font-light text-[#2d2a26]/40 ml-1 italic serif lowercase">lapid</span>
+                  {homepageContent.logoText1}<span className="font-light text-[#2d2a26]/40 ml-1 italic serif lowercase">{homepageContent.logoText2}</span>
                 </span>
-                <span className="text-[8px] uppercase tracking-[0.4em] text-[#2d2a26]/60 group-hover:text-[#7d7463]/80 transition-colors">Therapy & Numerology</span>
+                <span className="text-[8px] uppercase tracking-[0.4em] text-[#2d2a26]/60 group-hover:text-[#7d7463]/80 transition-colors">{homepageContent.logoTagline}</span>
               </div>
             </div>
           </div>

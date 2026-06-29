@@ -183,8 +183,8 @@ export const syncAppointmentToGoogleCalendar = async (appointment: any, serviceT
   // appointment.date is YYYY-MM-DD
   // appointment.time is HH:MM
   const startDateTime = new Date(`${appointment.date}T${appointment.time}:00`);
-  // Assume appointment is 1 hour default if not specified
-  const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000);
+  // Assume appointment is 30 minutes default if not specified
+  const endDateTime = new Date(startDateTime.getTime() + 30 * 60 * 1000);
   
   const event = {
     summary: `${serviceType} - ${appointment.clientName}`,

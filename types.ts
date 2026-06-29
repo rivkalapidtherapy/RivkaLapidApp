@@ -71,8 +71,42 @@ export interface MessageTemplates {
 }
 
 export type AppView = 'home' | 'booking' | 'admin' | 'confirmation' | 'portal' | 'content';
-export type AdminTab = 'morning' | 'calendar' | 'appointments' | 'services' | 'analytics' | 'journal' | 'gallery' | 'settings' | 'clients' | 'content_hub';
+export type AdminTab = 'morning' | 'calendar' | 'appointments' | 'services' | 'analytics' | 'journal' | 'gallery' | 'settings' | 'clients' | 'content_hub' | 'homepage';
 export type NumerologyInsights = Record<number, string>;
+
+export interface HomepageContent {
+  logoInitials: string;
+  logoText1: string;
+  logoText2: string;
+  logoTagline: string;
+  
+  heroTitle: string;
+  heroSubtitle: string;
+  heroQuote: string;
+  heroImageUrl: string;
+  
+  painPointsBadge: string;
+  painPointsTitle: string;
+  painPoint1: string;
+  painPoint2: string;
+  painPoint3: string;
+  painPoint4: string;
+  painPoint5: string;
+  painPointsFooter: string;
+  
+  aboutBadge: string;
+  aboutTitle: string;
+  aboutParagraph1: string;
+  aboutParagraph2: string;
+  aboutUvp: string;
+  aboutParagraph3: string;
+  aboutParagraph4: string;
+  aboutParagraph5: string;
+  aboutImageUrl: string;
+  aboutImageLabel: string;
+  aboutImageSublabel: string;
+}
+
 
 export interface JourneyNote {
   id: string;

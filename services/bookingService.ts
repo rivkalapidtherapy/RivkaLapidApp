@@ -1,4 +1,4 @@
-import { Appointment, ServiceType, ClinicStats, Service, GalleryItem, DailyHours, MessageTemplates, NumerologyInsights, JourneyNote, BookingItem, ContentItem, NumerologyProfile, ClientReflection, ClientTask, ClientSavedContent, ClientRecommendedContent } from "../types";
+import { Appointment, ServiceType, ClinicStats, Service, GalleryItem, DailyHours, MessageTemplates, NumerologyInsights, JourneyNote, BookingItem, ContentItem, NumerologyProfile, ClientReflection, ClientTask, ClientSavedContent, ClientRecommendedContent, HomepageContent } from "../types";
 import { WORK_HOURS as INITIAL_HOURS, SERVICES as INITIAL_SERVICES } from "../constants";
 import { supabase } from "../lib/supabase";
 
@@ -12,6 +12,40 @@ const DEFAULT_DAILY_HOURS: DailyHours = {
   5: [], // Friday empty by default
   6: []  // Saturday empty by default
 };
+
+export const DEFAULT_HOMEPAGE_CONTENT: HomepageContent = {
+  logoInitials: "RL",
+  logoText1: "RIVKA",
+  logoText2: "lapid",
+  logoTagline: "Therapy & Numerology",
+  
+  heroTitle: "תהליך ליווי נומרולוגי רגשי אישי ומעצים",
+  heroSubtitle: "מטפלת רגשית, נומרולוגית ומנחת סדנאות",
+  heroQuote: "הקשבה אמיתית אינה רק לאוזניים, היא נוכחות של הלב במרחב שבין המספרים למילים.",
+  heroImageUrl: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=800",
+  
+  painPointsBadge: "עצור לרגע להקשיב",
+  painPointsTitle: "אם הגעת לכאן, יכול להיות שאת מרגישה ש...",
+  painPoint1: "את נותנת לכולם, אבל שכחת את עצמך בדרך.",
+  painPoint2: "את יודעת שיש בך הרבה יותר, אבל משהו עוצר אותך.",
+  painPoint3: "את מרגישה תקיעות שחוזרת שוב ושוב בתחומים שונים בחייך.",
+  painPoint4: "את מחפשת זוגיות, שפע, ביטחון עצמי או כיוון, אבל לא מצליחה לפרוץ את המעגלים שחוזרים על עצמך.",
+  painPoint5: "את פשוט רוצה לחזור להרגיש שמחה, מחוברת ונינוחה בתוך החיים שלך.",
+  painPointsFooter: "אם הזדהית אפילו עם אחד מהדברים האלו, את במקום הנכון.",
+  
+  aboutBadge: "הגישה הטיפולית",
+  aboutTitle: "כאן מתחיל השינוי",
+  aboutParagraph1: "אני לא מאמינה בטיפול שמתמקד רק במה שרואים על פני השטח. ביחד, נגיע לשורש החסמים שמנהלים אותך, נבין מה מעכב אותך וניצור תנועה חדשה, מדויקת ומיטיבה יותר עבורך.",
+  aboutParagraph2: "התהליך שאני מלווה בו משלב בין טיפול רגשי, עבודה עם תת המודע ונומרולוגיה – שילוב שמאפשר להבין את התמונה הרחבה ולהוביל לשינוי עמוק, מחובר ומעשי.",
+  aboutUvp: "מעבר לכלים הטיפוליים, אני מביאה איתי דרך הסתכלות ייחודית שפיתחתי לאורך למעלה מעשור כעורכת דין בכירה בתחום הנדל\"ן, במסגרתו ליוויתי עסקאות מהגדולות והמובילות בצמרת המשק הישראלי.",
+  aboutParagraph3: "השנים הללו לימדו אותי מיומנויות שהפכו היום לחלק בלתי נפרד מהעשייה שלי: יכולת אבחון גבוהה, זיהוי דפוסים, הקשבה עמוקה, דיוק בפרטים, ניהול משא ומתן ויכולת לראות את התמונה הרחבה לצד הפרטים הקטנים.",
+  aboutParagraph4: "היום, אני משתמשת בכל אותן יכולות כדי לעזור לנשים לנהל את המשא ומתן החשוב ביותר בחייהן – זה שהן מנהלות מול עצמן.",
+  aboutParagraph5: "המטרה שלי היא שתצאי עם הרבה יותר מפתרון נקודתי, אלא עם בהירות, ביטחון וכלים פרקטים שעובדים באמת ושילוו אותך לאורך המסע שלך כאן בחיים.",
+  aboutImageUrl: "/rivka.png",
+  aboutImageLabel: "רבקה לפיד",
+  aboutImageSublabel: "מטפלת רגשית ונומרולוגית"
+};
+
 
 let appointments: Appointment[] = [
   {
@@ -318,6 +352,7 @@ export const deleteAppointment = async (id: string): Promise<void> => {
 };
 
 export const getAvailabilityForDate = async (dateStr: string): Promise<string[]> => {
+  await getDailyWorkingHours();
   const date = new Date(dateStr);
   const dayOfWeek = date.getDay();
   const baseHours = dailyWorkingHours[dayOfWeek] || [];
@@ -329,12 +364,71 @@ export const getAvailabilityForDate = async (dateStr: string): Promise<string[]>
 };
 
 export const getDailyWorkingHours = async (): Promise<DailyHours> => {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('working_hours').select('*');
+      if (!error && data && data.length > 0) {
+        const dbHours: DailyHours = {};
+        data.forEach((row: any) => {
+          dbHours[row.day_of_week] = row.hours;
+        });
+        dailyWorkingHours = dbHours;
+      }
+    } catch (err) {
+      console.error('Error fetching working hours:', err);
+    }
+  }
   return { ...dailyWorkingHours };
 };
 
 export const updateDailyWorkingHours = async (hours: DailyHours): Promise<void> => {
+  if (supabase) {
+    try {
+      for (const dayStr of Object.keys(hours)) {
+        const day = parseInt(dayStr, 10);
+        await supabase.from('working_hours').upsert({
+          day_of_week: day,
+          hours: hours[day]
+        });
+      }
+    } catch (err) {
+      console.error('Error updating working hours:', err);
+    }
+  }
   dailyWorkingHours = { ...hours };
 };
+
+export const getHomepageContent = async (): Promise<HomepageContent> => {
+  try {
+    if (supabase) {
+      const { data, error } = await supabase.from('site_content').select('*').eq('key', 'homepage').single();
+      if (!error && data) {
+        return data.value as HomepageContent;
+      }
+      if (error && error.code === 'PGRST116') {
+        await saveHomepageContent(DEFAULT_HOMEPAGE_CONTENT);
+        return DEFAULT_HOMEPAGE_CONTENT;
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching homepage content:', err);
+  }
+  return DEFAULT_HOMEPAGE_CONTENT;
+};
+
+export const saveHomepageContent = async (content: HomepageContent): Promise<void> => {
+  try {
+    if (supabase) {
+      await supabase.from('site_content').upsert({
+        key: 'homepage',
+        value: content
+      });
+    }
+  } catch (err) {
+    console.error('Error saving homepage content:', err);
+  }
+};
+
 
 export const getClinicStats = async (): Promise<ClinicStats> => {
   const active = appointments.filter(a => a.status === 'confirmed');

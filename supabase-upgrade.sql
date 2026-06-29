@@ -223,3 +223,32 @@ ON journey_notes FOR ALL
 TO authenticated
 USING (is_admin())
 WITH CHECK (is_admin());
+
+
+-- 12. Site Content Table (For Homepage Customization)
+CREATE TABLE IF NOT EXISTS site_content (
+  key TEXT PRIMARY KEY,
+  value JSONB NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE site_content ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public full access to site_content" ON site_content;
+CREATE POLICY "Allow public full access to site_content"
+ON site_content FOR ALL
+TO public
+USING (true)
+WITH CHECK (true);
+
+-- Update working hours default slots to include half hours
+INSERT INTO working_hours (day_of_week, hours) VALUES
+(0, '["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"]'),
+(1, '["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"]'),
+(2, '["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"]'),
+(3, '["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"]'),
+(4, '["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"]'),
+(5, '[]'),
+(6, '[]')
+ON CONFLICT (day_of_week) DO UPDATE SET hours = EXCLUDED.hours;
+

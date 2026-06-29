@@ -17,9 +17,18 @@ import { getWeeklyJournal } from '../services/geminiService';
 import { Card, Button, Input } from './UI';
 import { AdminClientsTab } from './AdminClientsTab';
 import { AdminMorningZenTab } from './AdminMorningZenTab';
+import { AdminHomepageTab } from './AdminHomepageTab';
 
 const DAYS_HEBREW = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
-const HOURS_POOL = Array.from({ length: 15 }, (_, i) => `${i + 8 < 10 ? '0' : ''}${i + 8}:00`);
+const HOURS_POOL: string[] = [];
+for (let h = 8; h <= 22; h++) {
+  const hourStr = h < 10 ? `0${h}` : `${h}`;
+  HOURS_POOL.push(`${hourStr}:00`);
+  if (h < 22) {
+    HOURS_POOL.push(`${hourStr}:30`);
+  }
+}
+
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>('morning');
@@ -533,7 +542,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="flex overflow-x-auto md:flex-wrap bg-stone-100/50 p-1.5 rounded-xl border border-stone-200/50 gap-1 scrollbar-hide">
-          {(['morning', 'appointments', 'calendar', 'clients', 'services', 'gallery', 'analytics', 'journal', 'settings', 'content_hub'] as AdminTab[]).map((tab) => (
+          {(['morning', 'appointments', 'calendar', 'clients', 'services', 'gallery', 'analytics', 'journal', 'settings', 'content_hub', 'homepage'] as AdminTab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -552,6 +561,7 @@ const AdminDashboard: React.FC = () => {
               {tab === 'journal' && 'סיכום'}
               {tab === 'settings' && 'הגדרות'}
               {tab === 'content_hub' && 'ניהול תוכן'}
+              {tab === 'homepage' && 'דף הבית'}
             </button>
           ))}
         </div>
@@ -1071,6 +1081,10 @@ const AdminDashboard: React.FC = () => {
                 ))}
               </div>
             </div>
+          )}
+
+          {activeTab === 'homepage' && (
+            <AdminHomepageTab />
           )}
         </motion.div>
 

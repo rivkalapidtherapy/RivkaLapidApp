@@ -79,3 +79,14 @@ BEGIN
     EXECUTE 'CREATE POLICY "Allow public full access to numerology_insights" ON numerology_insights FOR ALL TO public USING (true) WITH CHECK (true)';
   END IF;
 END $$;
+
+
+-- ---- SITE CONTENT ----
+ALTER TABLE site_content ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public full access to site_content" ON site_content;
+CREATE POLICY "Allow public full access to site_content"
+ON site_content FOR ALL
+TO public
+USING (true)
+WITH CHECK (true);
+
